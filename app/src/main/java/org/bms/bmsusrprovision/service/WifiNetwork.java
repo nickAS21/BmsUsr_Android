@@ -1,0 +1,54 @@
+package org.bms.bmsusrprovision.service;
+
+public class WifiNetwork {
+    private String ssid;
+    private String bssid;
+    private int signalLevel;
+    private boolean isCurrent;
+    private boolean secured;
+
+    public WifiNetwork() {
+    }
+
+    public WifiNetwork(String ssid, String bssid, int signalLevel, boolean isCurrent, boolean secured) {
+        this.bssid = bssid;
+        this.signalLevel = signalLevel;
+        this.isCurrent = isCurrent;
+        this.ssid = !ssid.isEmpty() ? ssid : this.bssid;
+        this.secured = secured;
+    }
+
+    public String getSsid() {
+        return this.ssid;
+    }
+    public void setSsid(String ssid) {
+        this.ssid = ssid;
+    }
+
+    public String getBssid() {
+        return this.bssid;
+    }
+
+    public int getSignalLevel() {
+        return this.signalLevel;
+    }
+
+    public void setSignalLevel(int signalLevel) {
+        this.signalLevel = signalLevel;
+    }
+
+    public boolean isCurrent() {
+        return isCurrent;
+    }
+
+    public void setIsCurrent(boolean isCurrent) {
+        this.isCurrent = isCurrent;
+    }
+
+    public boolean isSecured() {
+        return secured;
+    }
+    public void setSecured(boolean secured) {
+        this.secured = secured;
+    }
+}
