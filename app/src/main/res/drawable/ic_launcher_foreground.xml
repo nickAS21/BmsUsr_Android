@@ -17,20 +17,17 @@
         android:pathData="M320,880Q303,880 291.5,868.5Q280,857 280,840L280,200Q280,183 291.5,171.5Q303,160 320,160L400,160L400,80L560,80L560,160L640,160Q657,160 668.5,171.5Q680,183 680,200L680,400Q659,400 639,403Q619,406 600,412L600,240L360,240L360,800L428,800Q439,823 453,843Q467,863 485,880L320,880Z"/>
 
     <!-- WiFi у правому нижньому куті замість шестерні -->
-    <group android:translateX="300" android:translateY="300" android:scaleX="1.2" android:scaleY="1.4">
+    <group android:translateX="430" android:translateY="400" android:scaleX="0.4" android:scaleY="0.6">
 
-      <!-- найбільша дуга -->
-      <path android:fillColor="@android:color/white"
-          android:pathData="M120,200 A200,200 0 0 1 440,200 L400,240 A160,160 0 0 0 160,240Z"/>
-      <!-- середня дуга -->
-      <path android:fillColor="@android:color/white"
-          android:pathData="M180,260 A140,140 0 0 1 380,260 L340,300 A100,100 0 0 0 220,300Z"/>
-      <!-- менша дуга -->
-      <path android:fillColor="@android:color/white"
-          android:pathData="M240,320 A80,80 0 0 1 320,320 L300,340 A60,60 0 0 0 260,340Z"/>
-      <!-- крапка (малюється як замкнута дуга) -->
-      <path android:fillColor="@android:color/white"
-          android:pathData="M270,380 A20,20 0 1 1 269.9,380Z"/>
+      <!--3-->
+      <path android:fillColor="@android:color/black" android:pathData="M73,424L2,353Q99,259 222.5,209.5Q346,160 480,160Q614,160 737.5,209.5Q861,259 958,353L887,424Q805,345 700,302.5Q595,260 480,260Q365,260 260,302.5Q155,345 73,424Z"/>
+      <!--2-->
+      <path android:fillColor="@android:color/black" android:pathData="M186,538L116,467Q190,396 284,358Q378,320 481,320Q584,320 677.5,357.5Q771,395 845,466L775,537Q715,480 638.5,450Q562,420 480,420Q397,420 321.5,450.5Q246,481 186,538Z"/>
+      <!--1-->
+      <path android:fillColor="@android:color/black" android:pathData="M298,651L228,580Q279,532 344,506Q409,480 480,480Q551,480 616,506Q681,532 732,580L662,651Q624,616 577.5,598Q531,580 480,580Q429,580 382.5,598Q336,616 298,651Z"/>
+      <!--0-->
+      <path android:fillColor="@android:color/black" android:pathData="M480,800Q447,800 423.5,776.5Q400,753 400,720Q400,687 423.5,663.5Q447,640 480,640Q513,640 536.5,663.5Q560,687 560,720Q560,753 536.5,776.5Q513,800 480,800Z"/>
+
     </group>
 
   </group>
