@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_ok">ОК</string>
+    <string name="button_back">Назад</string>
+    <string name="button_scan">Сканувати</string>
+    <string name="about_dialog_title">Про програму</string>
+    <string name="version_info">Версія: %s</string>
+    <string name="about_dialog_message">
+        Цей додаток призначений для налаштування та керування Wi-Fi параметрами модуля USR-WIFI232-B2. Він розроблений для використання з акумулятором GBL_2.45K3 від виробника GS Energy Storage (SYL Battery), що працює на стандартній прошивці (AB_AIO_4850_V1212_12101456) і використовує протокол AoBo через CAN.\n\n
+        Автор: Nick Kulikov (nickAS21)\n
+        GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
+    </string>
+    <string name="exit">Вихід</string>
+    <string name="ssid_hint">SSID (обов\'язково)</string>
+    <string name="password_hint">Пароль (обов\'язково)</string>
+    <string name="connected_to">Підключено до %s</string>
+    <string name="connection_to_failed">Підключення до %s не виконано.</string>
+    <string name="connection_to_waiting">Підключення до %s…</string>
+    <string name="connected_to_success">Підключено до %s</string>
+    <string name="connection_failed_toast">Підключення не вдалося.</string>
+    <string name="connection_lost">Підключення до %s втрачено.</string>
+    <string name="wifimanager_not_initialized">WiFiManager не ініціалізовано</string>
+    <string name="wifi_off_for_scan">Wi-Fi вимкнено. Увімкніть його для сканування.</string>
+    <string name="location_off_for_scan">Увімкніть служби локації (Location) для сканування Wi-Fi.</string>
+    <string name="location_permission_denied">Дозвіл на розташування відхилено. Сканування Wi-Fi неможливе.</string>
+    <string name="scan_failed">Сканування не вдалося.</string>
+    <string name="no_location_permission_connect">Немає дозволу на розташування. Неможливо підключитися.</string>
+    <string name="cannot_add_or_find_network">Не вдалося додати або знайти мережу.</string>
+    <string name="cannot_start_wifi_scan">Не вдалося почати сканування Wi-Fi</string>
+    <string name="scan_completed">Сканування завершено.</string>
+
+    <string name="main_prompt_text">Оберіть мережу для підключення</string>
+    <string name="rescan_button_text">Сканувати ще раз</string>
+
+    <string name="bms_networks_updated">Список мереж від BMS оновлено.</string>
+    <string name="update_settings_success">Налаштування BMS WiFi на обрану мережу - оновлено.</string>
+    <string name="error_with_message">Помилка: %s</string>
+
+    <string name="content_desc_back">Назад</string>
+    <string name="connected_to_title">Підключено до:</string>
+    <string name="bms_networks_title">Доступні Wi-Fi мережі від BMS:</string>
+    <string name="example_ssid">Приклад SSID</string>
+
+    <string name="invalid_packet_length">Недійсна довжина пакета.</string>
+    <string name="invalid_checksum">Недійсна контрольна сума.</string>
+    <string name="invalid_decode_response_length">Недійсний decode Response. Довжина &lt; 6</string>
+    <string name="ssid_ok">ssid - ok</string>
+    <string name="password_ok">password - ok</string>
+    <string name="ssid_not_found_and_password_invalid">ssid не знайдено та пароль недійсний</string>
+    <string name="ssid_not_found">ssid не знайдено</string>
+    <string name="password_invalid">пароль недійсний</string>
+    <string name="hex_length_error">Шістнадцятковий рядок повинен мати парну довжину.</string>
+    <string name="invalid_hex_char_error">Недійсний шістнадцятковий символ у рядку.</string>
+
+    <string name="socket_init_error">Помилка ініціалізації сокета: %s</string>
+    <string name="socket_not_initialized">Сокет або MulticastLock не ініціалізовано.</string>
+    <string name="command_not_formed">Команда не сформована. Сommand.length == 0</string>
+    <string name="udp_packet_sent">UDP пакет відправлено.</string>
+    <string name="response_received">Отримано відповідь</string>
+    <string name="no_response_from_bms">Не отримано відповіді від BMS.</string>
+    <string name="send_receive_error">Помилка при відправленні/отриманні: %s</string>
+
+    <string name="bms_networks_updated_toast">Список мереж від BMS оновлено.</string>
+    <string name="bms_networks_updated_zero">Список мереж від BMS оновлено він пустий.</string>
+    <string name="update_settings_success_toast">Налаштування BMS WiFi на обрану мережу - оновлено.</string>
+    <string name="error_with_message_toast">Помилка: %s</string>
+
+    <string name="set_wifi_filter">Встановити фільтр Wi-Fi</string>
+    <string name="dialog_set_filter_title">Встановлення фільтра Wi-Fi мереж</string>
+    <string name="filter_updated_toast">Фільтр оновлено на: %s</string>
+    <string name="filter_cannot_be_empty">Фільтр не може бути порожнім.</string>
+    <string name="button_cancel">Відмінити</string>
+
+    <string name="disable_filter_text">Вимкнути фільтр</string>
+    <string name="enable_filter_text">Увімкнути фільтр</string>
+    <string name="filter_enabled_toast">Фільтр увімкнено.</string>
+    <string name="filter_disabled_toast">Фільтр вимкнено.</string>
+    <string name="reset_filter_text">Скинути фільтр</string>
+    <string name="filter_reset_toast">Фільтр скинуто до:      \nЗаст.=\'%1$b\' Val=\'%2$s\'</string>
+</resources>

@@ -5,16 +5,18 @@ public class WifiNetwork {
     private String bssid;
     private int signalLevel;
     private boolean isCurrent;
+    private boolean isCurrentSsidStart;
     private boolean secured;
 
     public WifiNetwork() {
     }
 
-    public WifiNetwork(String ssid, String bssid, int signalLevel, boolean isCurrent, boolean secured) {
+    public WifiNetwork(String ssid, String bssid, int signalLevel, boolean isCurrent, boolean isCurrentStart, boolean secured) {
         this.bssid = bssid;
         this.signalLevel = signalLevel;
         this.isCurrent = isCurrent;
-        this.ssid = !ssid.isEmpty() ? ssid : this.bssid;
+        this.isCurrentSsidStart = isCurrentStart;
+        this.ssid = ssid;
         this.secured = secured;
     }
 
@@ -43,6 +45,14 @@ public class WifiNetwork {
 
     public void setIsCurrent(boolean isCurrent) {
         this.isCurrent = isCurrent;
+    }
+
+    public boolean isCurrentSsidStart() {
+        return isCurrentSsidStart;
+    }
+
+    public void setIsdCurrentSsidStart(boolean isCurrentSsidStart) {
+        this.isCurrentSsidStart = isCurrentSsidStart;
     }
 
     public boolean isSecured() {

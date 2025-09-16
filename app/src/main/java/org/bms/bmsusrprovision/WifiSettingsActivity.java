@@ -3,8 +3,9 @@ package org.bms.bmsusrprovision;
 import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_GET_WIFI_LIST;
 import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_UPDATE_SETTINGS;
 import static org.bms.bmsusrprovision.service.CodecBms.decodeResponse;
-import static org.bms.bmsusrprovision.service.CodecBms.decodeSettingResponse;
 import static org.bms.bmsusrprovision.service.CodecBms.getCommand;
+import static org.bms.bmsusrprovision.service.HelperBms.CHOSEN_SSID_TEXT;
+import static org.bms.bmsusrprovision.service.HelperBms.CURRENT_SSID_START_TEXT;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.bms.bmsusrprovision.service.BmsCommandType;
+import org.bms.bmsusrprovision.service.CodecBms;
 import org.bms.bmsusrprovision.service.ResultSendCommand;
 import org.bms.bmsusrprovision.service.UdpClient;
 import org.bms.bmsusrprovision.service.WifiListAdapter;
@@ -33,51 +36,47 @@ import org.bms.bmsusrprovision.service.WifiNetwork;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WifiSettingsActivity extends AppCompatActivity {
+public class WifiSettingsActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
-    private TextView textViewConnectedTo;
+
     private EditText editTextSsid;
     private EditText editTextPassword;
     private Button buttonOk;
-    private ImageButton buttonBack;
 
-    private ImageButton buttonScan;
-    private RecyclerView recyclerViewBmsNetworks;
     private WifiListAdapter bmsNetworksAdapter;
-    private List<WifiNetwork> bmsNetworksList = new ArrayList<>();
+//    private List<WifiNetwork> bmsNetworksList;
     private UdpClient udpClient;
 
     private ProgressBar progressBar;
 
-    private static String connectedSsid;
-    private static String currentSsidStart;
+    private String currentSsidStart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CodecBms.setContext(this);
         setContentView(R.layout.activity_wifi_settings);
 
-        textViewConnectedTo = findViewById(R.id.textViewConnectedToSsid);
+        TextView textViewConnectedTo = findViewById(R.id.textViewConnectedToSsid);
         editTextSsid = findViewById(R.id.editTextSsid);
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonOk = findViewById(R.id.buttonOk);
         buttonOk.setEnabled(false);
-        buttonBack = findViewById(R.id.buttonBack);
-        buttonScan = findViewById(R.id.buttonScan);
-        recyclerViewBmsNetworks = findViewById(R.id.recyclerViewBmsNetworks);
+        ImageButton buttonBack = findViewById(R.id.buttonBack);
+        ImageButton buttonScan = findViewById(R.id.buttonScan);
+        RecyclerView recyclerViewBmsNetworks = findViewById(R.id.recyclerViewBmsNetworks);
         recyclerViewBmsNetworks.setLayoutManager(new LinearLayoutManager(this));
         progressBar = findViewById(R.id.progressBar);
-
-        bmsNetworksAdapter = new WifiListAdapter(bmsNetworksList, null);
+        bmsNetworksAdapter = new WifiListAdapter(this, this);
         recyclerViewBmsNetworks.setAdapter(bmsNetworksAdapter);
 
-        connectedSsid = getIntent().getStringExtra("CHOSEN_SSID");
-        currentSsidStart = getIntent().getStringExtra("CURRENT_PHONE_SSID");
+        String connectedSsid = getIntent().getStringExtra(CHOSEN_SSID_TEXT);
+        currentSsidStart = getIntent().getStringExtra(CURRENT_SSID_START_TEXT);
         if (connectedSsid != null) {
             textViewConnectedTo.setText(connectedSsid);
         }
 
-        // Додаємо TextWatcher до обох полів вводу
+        // Add TextWatcher to both input fields
         TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -87,10 +86,10 @@ public class WifiSettingsActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                // Перевіряємо, чи обидва поля не порожні
+                // Check if both fields are not empty
                 boolean isReady = !editTextSsid.getText().toString().isEmpty() &&
                         !editTextPassword.getText().toString().isEmpty();
-                // Активуємо/деактивуємо кнопку OK залежно від перевірки
+                // Activate/deactivate the OK button based on the check
                 buttonOk.setEnabled(isReady);
             }
         };
@@ -107,7 +106,6 @@ public class WifiSettingsActivity extends AppCompatActivity {
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
             }
             startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
-//            }
         });
 
         buttonBack.setOnClickListener(v -> closeActivity());
@@ -117,7 +115,7 @@ public class WifiSettingsActivity extends AppCompatActivity {
             }
         });
 
-        // Створюємо та реєструємо OnBackPressedCallback
+        // Create and register OnBackPressedCallback
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -126,7 +124,7 @@ public class WifiSettingsActivity extends AppCompatActivity {
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
 
-        // Ініціалізація клієнта та запуск сканування
+        // Initialize client and start scan
         udpClient = new UdpClient(this, new UdpClient.UdpListener() {
             @Override
             public void onDataReceived(byte[] ssids) {
@@ -145,34 +143,42 @@ public class WifiSettingsActivity extends AppCompatActivity {
         startSendCommand (CMD_GET_WIFI_LIST);
     }
 
+    @Override
+    public void onItemClick(WifiNetwork network) {
+        editTextSsid.setText(network.getSsid());
+    }
+
     private void startSendCommand(BmsCommandType bmsCommandType, String... parameters) {
         udpClient.startSendCommand(getCommand (bmsCommandType, parameters));
-        progressBar.setVisibility(View.VISIBLE); // Показуємо ProgressBar
+        // Show ProgressBar
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     private <T> void responseSendCommand(ResultSendCommand<T> decodeResult) {
         BmsCommandType type = decodeResult.type();
         switch (type) {
-            case RSP_WIFI_LIST: // список WiFi
+            case RSP_WIFI_LIST: // WiFi list
                 List<WifiNetwork> networksFromBms = (List<WifiNetwork>) decodeResult.payload();
                 if (networksFromBms != null) {
-                    bmsNetworksList.clear();
+//                    bmsNetworksList.clear();
                     for (WifiNetwork network : networksFromBms) {
                         if (network.getSsid().equals(currentSsidStart)) {
-                            network.setIsCurrent(true); // Встановлюємо зелену галочку
+                            // Set green check mark
+                            network.setIsdCurrentSsidStart(true);
                             break;
                         }
                     }
-                    bmsNetworksList.addAll(networksFromBms);
-                    bmsNetworksAdapter.setWifiNetworks(bmsNetworksList);
-                    Toast.makeText(WifiSettingsActivity.this, "Список мереж від BMS оновлено.", Toast.LENGTH_SHORT).show();
+//                    bmsNetworksList.addAll(networksFromBms);
+                    bmsNetworksAdapter.setWifiNetworks(networksFromBms);
+                    Toast.makeText(WifiSettingsActivity.this, getString(R.string.bms_networks_updated), Toast.LENGTH_SHORT).show();
+                } else {
+                    bmsNetworksAdapter.setWifiNetworks(new ArrayList<>());
+                    errorSendCommand (getString(R.string.bms_networks_updated_zero));
                 }
-                bmsNetworksList = (List<WifiNetwork>) decodeResult.payload();
-                bmsNetworksAdapter.setWifiNetworks(bmsNetworksList);
-                Toast.makeText(WifiSettingsActivity.this, "Список мереж від BMS оновлено.", Toast.LENGTH_SHORT).show();
+
                 break;
-            case RSP_UPDATE_SETTINGS: // результат конфігурації
-                Toast.makeText(WifiSettingsActivity.this, "Налаштування BMS WiFi на обранк мережу - оновлено.", Toast.LENGTH_SHORT).show();
+            case RSP_UPDATE_SETTINGS: // configuration result
+                Toast.makeText(WifiSettingsActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());
@@ -182,13 +188,16 @@ public class WifiSettingsActivity extends AppCompatActivity {
     private void errorSendCommand (String message) {
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(WifiSettingsActivity.this, "Помилка: " + message, Toast.LENGTH_LONG).show();
+            Toast.makeText(WifiSettingsActivity.this, getString(R.string.error_with_message, message), Toast.LENGTH_LONG).show();
         });
     }
     private void closeActivity() {
         if (udpClient != null) {
             udpClient.closeSocket();
         }
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+        setResult(RESULT_OK, resultIntent);
         finish();
     }
 

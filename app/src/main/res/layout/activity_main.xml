@@ -10,7 +10,7 @@
         android:id="@+id/textViewPrompt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Оберіть мережу для підключення"
+        android:text="@string/main_prompt_text"
         android:textAlignment="center"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:text="Сканувати ще раз"
+        android:text="@string/rescan_button_text"
         android:drawableStart="@drawable/ic_refresh"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

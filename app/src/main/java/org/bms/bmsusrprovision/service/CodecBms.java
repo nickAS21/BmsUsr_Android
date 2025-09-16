@@ -12,6 +12,9 @@ import static org.bms.bmsusrprovision.service.HelperBms.BYTE_SEPARATOR_1;
 
 import android.util.Log;
 
+import org.bms.bmsusrprovision.R;
+import android.content.Context;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -26,6 +29,11 @@ import java.util.Objects;
 public class CodecBms {
 
     static String TAG = "CodecBMs";
+    private static Context context;
+
+    public static void setContext(Context ctx) {
+        context = ctx;
+    }
 
     public static byte[] getCommand (BmsCommandType bmsCommandType, String... parameters) {
         switch (bmsCommandType) {
@@ -33,11 +41,11 @@ public class CodecBms {
                 return generateSearchCmd();
             }
             case CMD_UPDATE_SETTINGS: {
-                // Перевіряємо, чи є два параметри, щоб уникнути помилки
+                // Check if there are two parameters to avoid an error
                 if (parameters.length >= 2) {
                     return generateSettingCmd(parameters[0], parameters[1]);
                 } else {
-                    // Обробка помилки: повертаємо порожній масив або кидаємо виняток
+                    // Error handling: return an empty array or throw an exception
                     return new byte[0];
                 }
             }
@@ -54,11 +62,9 @@ public class CodecBms {
         return generatePacket(payload);
     }
 
-    /**
-     * TODO test
-     * @param hexData
-     * @return
-     */
+    //    /**
+//     * TODO test
+//     */
 //    public static Map<String, Object> decodeResponse(String hexData) {
 //        byte[] data = hexToBytes(hexData);
 //        return decodeResponse(data);
@@ -69,32 +75,30 @@ public class CodecBms {
         System.arraycopy(data, 0, dataResponse, 0, lenDataResponse);
         String messageError = null;
         if (lenDataResponse < 4) {
-            messageError = "Invalid packet length.";
+            messageError = context.getString(R.string.invalid_packet_length);
 
         }
         if (!validateChecksum(dataResponse)) {
-            messageError =  "Invalid checksum";
+            messageError =  context.getString(R.string.invalid_checksum);
         }
-        Map<String, Object> result = new HashMap<>();
         BmsCommandType type = BmsCommandType.fromCode(dataResponse[3] & BYTE_MASK_TO_255);
         if (dataResponse.length < 6 && (type.equals(RSP_WIFI_LIST) || type.equals(RSP_UPDATE_SETTINGS))) {
-            messageError =  "Invalid decode Response. Length < 6";
+            messageError =  context.getString(R.string.invalid_decode_response_length);
         }
         if (messageError != null) {
             return new ResultSendCommand<>(RSP_ERRORS, messageError, null);
         }
 
-        result.put("type", type);
-        switch (type) {
-            case RSP_WIFI_LIST: // список WiFi
-                return new ResultSendCommand<>(type, messageError, (List<T>) decodeSearchResponse(dataResponse));
-            case RSP_UPDATE_SETTINGS: // результат конфігурації
-                return decodeSettingResponse(dataResponse);
-            default:
+        return switch (type) {
+            case RSP_WIFI_LIST -> // WiFi list
+                    new ResultSendCommand<>(type, messageError, (List<T>) decodeSearchResponse(dataResponse));
+            case RSP_UPDATE_SETTINGS -> // configuration result
+                    decodeSettingResponse(dataResponse);
+            default -> {
                 List<String> hexData = List.of(bytesToHex(dataResponse));
-                return new ResultSendCommand<>(UNKNOWN, messageError, (List<T>) hexData);
-
-        }
+                yield new ResultSendCommand<>(UNKNOWN, messageError, (List<T>) hexData);
+            }
+        };
     }
 
     /**
@@ -119,11 +123,11 @@ public class CodecBms {
                 if (currentEntryBytes.size() > 0) {
                     byte[] entryData = currentEntryBytes.toByteArray();
 
-                    // Рівень сигналу - останній байт перед 0x0D
+                    // Signal level - the last byte before 0x0D
                     int signalLevel = -(entryData[entryData.length - 1] & BYTE_MASK_TO_255);
                     Log.d(TAG, "signalLevel: " + signalLevel);
                     Log.d(TAG, "len_entryData: " + entryData.length);
-                    // SSID - решта байтів -> <-> (0x00 + signalLevel) = 2
+                    // SSID - the remaining bytes -> <-> (0x00 + signalLevel) = 2
                     int len = entryData.length - 3;
 
                     if (len > 2) {
@@ -141,7 +145,7 @@ public class CodecBms {
                         }
                     }
                 }
-                currentPos += 2; // Переходимо до наступної позиції після 0x0A
+                currentPos += 2; // Move to the next position after 0x0A
                 currentEntryBytes.reset();
             } else {
                 currentEntryBytes.write(bArr[currentPos]);
@@ -149,7 +153,7 @@ public class CodecBms {
             }
         }
 
-        // Сортуємо унікальні мережі за рівнем сигналу
+        // Sort unique networks by signal level
         List<WifiNetwork> sortedNetworks = new ArrayList<>(uniqueNetworks.values());
         sortedNetworks.sort((a, b) -> Integer.compare(b.getSignalLevel(), a.getSignalLevel()));
 
@@ -189,16 +193,16 @@ public class CodecBms {
         BmsCommandType type;
         if (ssidCheck == 1 && passwordCheck == 1) {
             type = RSP_UPDATE_SETTINGS;
-            payload = List.of("ssid - ok", "password - ok");
+            payload = List.of(context.getString(R.string.ssid_ok), context.getString(R.string.password_ok));
         } else if (ssidCheck == 0 && passwordCheck == 0) {
-            messageError = "ssid_not_found and password_invalid";
+            messageError = context.getString(R.string.ssid_not_found_and_password_invalid);
             type = RSP_ERRORS;
         } else if (ssidCheck == 0) {
             type = RSP_ERRORS;
-            messageError = "ssid_not_found";
+            messageError = context.getString(R.string.ssid_not_found);
         } else if (passwordCheck == 0) {
             type = RSP_ERRORS;
-            messageError = "password_invalid";
+            messageError = context.getString(R.string.password_invalid);
         }  else {
             type = UNKNOWN;
             payload = List.of(ssidCheck, passwordCheck);
@@ -275,21 +279,21 @@ public class CodecBms {
     }
 
     static byte[] hexToBytes(String hex) {
-        // Якщо довжина рядка непарна, кидаємо виняток або додаємо '0'
+        // If the string length is odd, throw an exception or add '0'
         if (hex.length() % 2 != 0) {
             throw new IllegalArgumentException("Hex string must have an even length.");
         }
         int len = hex.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            // Перетворення двох символів у байт за допомогою Character.digit
+            // Convert two characters to a byte using Character.digit
             int high = Character.digit(hex.charAt(i), 16);
             int low = Character.digit(hex.charAt(i + 1), 16);
-            // Перевірка на некоректні символи
+            // Check for invalid characters
             if (high == -1 || low == -1) {
                 throw new IllegalArgumentException("Invalid hex character in string.");
             }
-            // Комбінування двох байтів в один
+            // Combine two bytes into one
             data[i / 2] = (byte) ((high << 4) + low);
         }
         return data;

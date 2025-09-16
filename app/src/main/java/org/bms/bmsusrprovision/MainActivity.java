@@ -1,7 +1,12 @@
 package org.bms.bmsusrprovision;
 
-import static org.bms.bmsusrprovision.service.CodecBms.decodeResponse;
+import static org.bms.bmsusrprovision.service.HelperBms.CHOSEN_SSID_TEXT;
+import static org.bms.bmsusrprovision.service.HelperBms.CURRENT_SSID_START_TEXT;
+import static org.bms.bmsusrprovision.service.HelperBms.WIFI_FILTER_SSID_DEF;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -10,16 +15,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -29,36 +37,44 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import org.bms.bmsusrprovision.service.CodecBms;
 import org.bms.bmsusrprovision.service.WifiListAdapter;
 import org.bms.bmsusrprovision.service.WifiNetwork;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
     private static final int PERMISSIONS_REQUEST_CODE = 1001;
-    private RecyclerView recyclerView;
     private WifiListAdapter adapter;
-    private List<WifiNetwork> wifiNetworks = new ArrayList<>();
-    private Button buttonRescan;
+//    private List<WifiNetwork> wifiNetworks;
     private WifiManager wifiManager;
     private WifiScanReceiver wifiScanReceiver;
     private ProgressBar progressBar;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean isReceiverRegistered = false;
     private boolean isScanCompleted = false;
 
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
-    private String targetSsidToConnect = null;
 
     // --- added for robust scanning retries and location check
     private static final int MAX_SCAN_RETRIES = 3;
@@ -68,21 +84,32 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
 
     private String pendingChosenSsid = null;
     private String currentSsidStart = null;
+    private boolean isFilterEnabled = true;
+
+    private String wifiFilterSsid; // Default filter string
+
+    private ActivityResultLauncher<Intent> wifiSettingsLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CodecBms.setContext(this);
         setContentView(R.layout.activity_main);
+
+        // Load saved filter settings
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        wifiFilterSsid = sharedPreferences.getString("wifiFilterSsid", WIFI_FILTER_SSID_DEF);
+        isFilterEnabled = sharedPreferences.getBoolean("isFilterEnabled", true);
 
         progressBar = findViewById(R.id.progressBar);
 
-        recyclerView = findViewById(R.id.recyclerViewWifiList);
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewWifiList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        adapter = new WifiListAdapter(wifiNetworks, this);
+//        wifiNetworks = new ArrayList<>();
+        adapter = new WifiListAdapter( this, this);
         recyclerView.setAdapter(adapter);
 
-        buttonRescan = findViewById(R.id.buttonRescan);
+        Button buttonRescan = findViewById(R.id.buttonRescan);
         buttonRescan.setOnClickListener(v -> checkPermissionsAndScan());
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -98,6 +125,11 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
 
         // slight delay to let system components settle, then start permission check + scan
         handler.postDelayed(this::checkPermissionsAndScan, 500);
+
+        wifiSettingsLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                this::handleWifiSettingsResult
+        );
     }
 
     @Override
@@ -108,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             isReceiverRegistered = true;
         }
         if (pendingChosenSsid != null) {
-            //перевіряємо успіх підключення до обраної мережі
+            // check if the connection to the selected network was successful
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             if (wifiInfo != null) {
                 String currentSsid = wifiInfo.getSSID();
@@ -116,12 +148,12 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                     currentSsid = currentSsid.replace("\"", "");
                     if (pendingChosenSsid.equals(currentSsid)) {
                         Intent intent = new Intent(this, WifiSettingsActivity.class);
-                        intent.putExtra("CHOSEN_SSID", pendingChosenSsid);
-                        intent.putExtra("CURRENT_PHONE_SSID", currentSsidStart);
+                        intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
+                        intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+                        wifiSettingsLauncher.launch(intent);
                         pendingChosenSsid = null;
-                        startActivity(intent);
                     } else {
-                        Toast.makeText(this, "Підключення до " + pendingChosenSsid + " не виконано.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.connection_to_failed, pendingChosenSsid), Toast.LENGTH_SHORT).show();
                         startWifiScan();
                     }
                 }
@@ -150,15 +182,59 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
         }
-        handler.removeCallbacksAndMessages(null); // Зупиняємо таймер
+        // Stop the timer
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // При необхідності, тут можна закривати сокети або інші ресурси
+        // If necessary, you can close sockets or other resources here
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_about) {
+            showAboutDialog();
+            return true;
+        } else if (id == R.id.action_filter) {
+            showFilterDialog();
+            return true;
+        } else if (id == R.id.action_toggle_filter) {
+            isFilterEnabled = !isFilterEnabled;
+
+            // Save the new state of the filter
+            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isFilterEnabled", isFilterEnabled);
+            editor.apply();
+
+            // Update the menu item title to reflect the new state
+            item.setTitle(isFilterEnabled ? R.string.disable_filter_text : R.string.enable_filter_text);
+            Toast.makeText(this, isFilterEnabled ? R.string.filter_enabled_toast : R.string.filter_disabled_toast, Toast.LENGTH_SHORT).show();
+            // Rescan to show filtered or unfiltered list
+            startWifiScan();
+            return true;
+        } else if (id == R.id.action_reset_filter) {
+            resetFilterToDefault();
+            // After resetting, we should probably update the menu item title as well
+            Toast.makeText(MainActivity.this, getString(R.string.filter_reset_toast, isFilterEnabled, wifiFilterSsid), Toast.LENGTH_SHORT).show();
+            startWifiScan();
+            return true;
+        } else if (id == R.id.action_exit) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     private void checkPermissionsAndScan() {
         if (!isReceiverRegistered) {
             registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -177,15 +253,15 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     private void startWifiScan() {
         // TODO
 
-//        String hexData = "FF016C811B31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A513030333334313030323032383400640D0A6C6562656400640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100600D0A4B6F766C617232472D31002C0D0A002A0D0A4D696B726F54696B2D39353733424200220D0A6E657469735F322E34475F43424433454300180D0A4761726275686100170D0A54656E64615F7769666900180D0A4B76313800140D0A00140D0A4A61636B000F0D0A000D0D0A456C697A6162657468000D0D0A70617061000D0D0A000D0D0A4D696B726F54696B2D364135444638000D0D0A486F6D652057692D4669000D0D0A54502D4C696E6B5F32454142000A0D0A4D6164726964000A0D0A3232316100050D0A3931316200050D0A464946492D5749464900020D0AA8";
+//        String hexData = "FF016C811B31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A513030333334313030323032383400640D0A6c6562656400640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100600D0A4B6F766C617232472D31002C0D0A002A0D0A4D696B726F54696B2D39353733424200220D0A6e657469735F322E34475F43424433454300180D0A4761726275686100170D0A54656E64615F7769666900180D0A4B76313800140D0A00140D0A4A61636B000F0D0A000D0D0A456C697A6162657468000D0D0A70617061000D0D0A000D0D0A4D696B726F54696B2D364135444638000D0D0A486F6D652057692D4669000D0D0A54502D4C696E6B5F32454142000A0D0A4D6164726964000A0D0A3232316100050D0A3931316200050D0A464946492D5749464900020D0AA8";
 //        Map<String, Object> result =  decodeResponse(hexData);
         if (wifiManager == null) {
-            Toast.makeText(this, "WiFiManager не ініціалізовано", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.wifimanager_not_initialized), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!wifiManager.isWifiEnabled()) {
-            Toast.makeText(this, "Wi-Fi вимкнено. Увімкніть його для сканування.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.wifi_off_for_scan), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -194,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             return;
         }
         if (!isLocationEnabled()) {
-            Toast.makeText(this, "Увімкніть служби локації (Location) для сканування Wi-Fi", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.location_off_for_scan), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -217,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startWifiScan();
             } else {
-                Toast.makeText(this, "Дозвіл на розташування відхилено. Сканування Wi-Fi неможливе.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.location_permission_denied), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -228,16 +304,15 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         String currentSsid = (currentWifiInfo != null) ? currentWifiInfo.getSSID().replace("\"", "") : null;
         pendingChosenSsid = network.getSsid();
         if (pendingChosenSsid.equals(currentSsid)) {
-            // 🔹 Вибрали ту ж мережу → одразу в WifiSettingsActivity
+            // Selected the same network -> go directly to WifiSettingsActivity
             Intent intent = new Intent(this, WifiSettingsActivity.class);
-            intent.putExtra("CHOSEN_SSID", pendingChosenSsid);
-            intent.putExtra("CURRENT_PHONE_SSID", currentSsid);
+            intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
+            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+            wifiSettingsLauncher.launch(intent);
             pendingChosenSsid = null;
-            startActivity(intent);
-
         } else {
-            // 🔹 Вибрали нову мережу → зберігаємо і чекаємо підтвердження підключення
-            Toast.makeText(this, "Підключення до " + pendingChosenSsid + "...", Toast.LENGTH_SHORT).show();
+            // Selected a new network -> save and wait for connection confirmation
+            Toast.makeText(this, getString(R.string.connection_to_waiting, pendingChosenSsid), Toast.LENGTH_SHORT).show();
             connectToWifi();
         }
     }
@@ -245,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     private void connectToWifi() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Немає дозволу на розташування. Неможливо підключитися.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.no_location_permission_connect), Toast.LENGTH_LONG).show();
                 return;
             }
             WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder()
@@ -271,13 +346,13 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                         String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
                         if (pendingChosenSsid.equals(connectedSsid)) {
-                            Toast.makeText(MainActivity.this, "Підключено до " + pendingChosenSsid, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(MainActivity.this, WifiSettingsActivity.class);
-                            intent.putExtra("CHOSEN_SSID", connectedSsid);
-                            intent.putExtra("CURRENT_PHONE_SSID", connectedSsid);
+                            intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
+                            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+                            wifiSettingsLauncher.launch(intent);
                             pendingChosenSsid = null;
-                            startActivity(intent);
                             connectivityManager.unregisterNetworkCallback(this);
                         }
                     });
@@ -287,14 +362,14 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             @Override
             public void onUnavailable() {
                 super.onUnavailable();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Підключення не вдалося.", Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_failed_toast), Toast.LENGTH_LONG).show());
             }
 
             @Override
             public void onLost(@NonNull Network network) {
                 super.onLost(network);
                 if (pendingChosenSsid != null) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Підключення до " + pendingChosenSsid + " втрачено.", Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
                 }
             }
         };
@@ -312,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
 
         int netId = -1;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Немає дозволу на розташування. Неможливо підключитися.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.no_location_permission_connect), Toast.LENGTH_LONG).show();
             return;
         }
         List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
@@ -331,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         }
 
         if (netId == -1) {
-            Toast.makeText(this, "Не вдалося додати або знайти мережу.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.cannot_add_or_find_network), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -360,13 +435,13 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                     String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
                     if (pendingChosenSsid.equals(connectedSsid)) {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity.this, "Підключено до " + connectedSsid, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(MainActivity.this, WifiSettingsActivity.class);
-                            intent.putExtra("CHOSEN_SSID", connectedSsid);
-                            intent.putExtra("CURRENT_PHONE_SSID", connectedSsid);
+                            intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
+                            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+                            wifiSettingsLauncher.launch(intent);
                             pendingChosenSsid = null;
-                            startActivity(intent);
                             if (networkCallback != null) {
                                 connectivityManager.unregisterNetworkCallback(networkCallback);
                                 networkCallback = null;
@@ -381,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             public void onLost(@NonNull Network network) {
                 super.onLost(network);
                 if (pendingChosenSsid != null) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Підключення до " + pendingChosenSsid + " не вдалося.", Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
                 }
             }
         };
@@ -407,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                         handler.postDelayed(() -> wifiManager.startScan(), RETRY_DELAY_MS * scanRetryCount);
                     } else {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(MainActivity.this, "Сканування не вдалося.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     updateWifiList(results);
@@ -417,24 +492,28 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     }
 
     private void updateWifiList(List<ScanResult> scanResults) {
-        wifiNetworks.clear();
+        List<WifiNetwork> wifiNetworks = new ArrayList<>();
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        String currentBssid = (wifiInfo != null) ? wifiInfo.getBSSID() : null;
         String currentSsid = (wifiInfo != null) ? wifiInfo.getSSID().replace("\"", "") : null;
 
         if (currentSsid != null && currentSsid.startsWith("\"") && currentSsid.endsWith("\"")) {
             currentSsid = currentSsid.substring(1, currentSsid.length() - 1);
         }
 
-        if (!isReceiverRegistered) {
+        if (currentSsidStart == null) {
             currentSsidStart = currentSsid;
         }
 
         HashMap<String, ScanResult> uniqueNetworks = new HashMap<>();
         for (ScanResult scanResult : scanResults) {
-            String key = scanResult.SSID.getBytes().length != 0 ? scanResult.SSID : scanResult.BSSID;
+            // Apply filter only if it's enabled and the network is NOT the currently connected one
+            if (isFilterEnabled && !scanResult.SSID.equals(currentSsid) && !scanResult.SSID.toLowerCase().startsWith(wifiFilterSsid.toLowerCase())) {
+                continue;
+            }
+
+            String key = scanResult.SSID != null && !scanResult.SSID.isEmpty() ? scanResult.SSID : scanResult.BSSID != null && !scanResult.BSSID.isEmpty() ? scanResult.BSSID : "Unknown network";
             if (uniqueNetworks.containsKey(key)) {
-                if (uniqueNetworks.get(key).level < scanResult.level) {
+                if (Objects.requireNonNull(uniqueNetworks.get(key)).level < scanResult.level) {
                     uniqueNetworks.put(key, scanResult);
                 }
             } else {
@@ -442,26 +521,21 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             }
         }
 
-        for (ScanResult scanResult : uniqueNetworks.values()) {
-            boolean isCurrentNetwork = false;
-            if (scanResult.BSSID != null && scanResult.BSSID.equals(currentBssid)) {
-                isCurrentNetwork = true;
-            } else if (scanResult.SSID != null && scanResult.SSID.equals(currentSsid)) {
-                isCurrentNetwork = true;
-            }
-
+        for (Map.Entry<String, ScanResult> entry : uniqueNetworks.entrySet()) {
+            String key = entry.getKey();
+            ScanResult scanResult = entry.getValue();
             boolean secured = scanResult.capabilities.contains("WEP")
                     || scanResult.capabilities.contains("WPA")
                     || scanResult.capabilities.contains("WPA2")
                     || scanResult.capabilities.contains("WPA3");
-
-            wifiNetworks.add(new WifiNetwork(scanResult.SSID, scanResult.BSSID, scanResult.level, isCurrentNetwork, secured));
+            wifiNetworks.add(new WifiNetwork(key, scanResult.BSSID, scanResult.level, key.equals(currentSsid), key.equals(currentSsidStart), secured));
+        }
+        if (wifiNetworks.size() > 1) {
+            wifiNetworks.sort((a, b) -> Boolean.compare(b.isCurrent(), a.isCurrent()));
         }
 
-        Collections.sort(wifiNetworks, (a, b) -> Boolean.compare(b.isCurrent(), a.isCurrent()));
-
         adapter.setWifiNetworks(wifiNetworks);
-        Toast.makeText(this, "Сканування завершено.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.scan_completed), Toast.LENGTH_SHORT).show();
     }
 
     private void scheduleRetry() {
@@ -477,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             }, RETRY_DELAY_MS * scanRetryCount);
         } else {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(this, "Не вдалося почати сканування Wi-Fi", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.cannot_start_wifi_scan), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -496,7 +570,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     }
 
     private boolean isLocationEnabled() {
-        if (locationManager == null) return true; // не можемо перевірити — припускаємо ввімкнено
+        if (locationManager == null) return true; // cannot check - assume enabled
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             return locationManager.isLocationEnabled();
         } else {
@@ -504,4 +578,95 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         }
     }
 
+    private void showAboutDialog() {
+        String aboutMessage = getString(R.string.about_dialog_message) + "\n\n" +
+                getString(R.string.github_url);
+        SpannableString spannableString = new SpannableString(aboutMessage);
+        String githubUrl = getString(R.string.github_url);
+        int startIndex = aboutMessage.indexOf(githubUrl);
+        int endIndex = startIndex + githubUrl.length();
+
+        if (startIndex >= 0) {
+            spannableString.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(githubUrl));
+                    startActivity(browserIntent);
+                }
+            }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        TextView messageTextView = new TextView(this);
+        messageTextView.setText(spannableString);
+        messageTextView.setMovementMethod(LinkMovementMethod.getInstance()); // This is crucial for making the link clickable
+
+        // Convert 16dp to pixels
+        int paddingInDp = 16;
+        int paddingInPx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, paddingInDp, getResources().getDisplayMetrics());
+        // Set padding for TextView (left, top, right, bottom)
+        messageTextView.setPadding(paddingInPx, paddingInPx, paddingInPx, paddingInPx);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.about_dialog_title)
+                .setView(messageTextView)
+                .setPositiveButton(R.string.button_ok, null)
+                .show();
+    }
+
+    private void showFilterDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dialog_set_filter_title);
+
+        final EditText input = new EditText(this);
+        input.setText(wifiFilterSsid);
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.button_ok, (dialog, which) -> {
+            String newFilter = input.getText().toString();
+            if (!newFilter.isEmpty()) {
+                wifiFilterSsid = newFilter;
+                // Save both filter settings: string and state
+                SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("wifiFilterSsid", newFilter);
+                editor.putBoolean("isFilterEnabled", isFilterEnabled);
+                // used commit() for synchronous saving
+                editor.commit();
+
+                Toast.makeText(this, getString(R.string.filter_updated_toast, newFilter), Toast.LENGTH_SHORT).show();
+                startWifiScan();
+            } else {
+                Toast.makeText(this, R.string.filter_cannot_be_empty, Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.button_cancel, (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void handleWifiSettingsResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
+            Intent data = result.getData();
+            if (data != null) {
+                // Return currentSsidStart with result
+                String returnedSsid = data.getStringExtra(CURRENT_SSID_START_TEXT);
+                if (currentSsidStart == null) {
+                    currentSsidStart = returnedSsid;
+                }
+            }
+        }
+    }
+
+    private void resetFilterToDefault() {
+        wifiFilterSsid = WIFI_FILTER_SSID_DEF;
+        isFilterEnabled = true;
+
+        // Save default settings to SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("wifiFilterSsid", wifiFilterSsid);
+        editor.putBoolean("isFilterEnabled", isFilterEnabled);
+        editor.apply();
+    }
 }

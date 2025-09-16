@@ -1,3 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BMS USR</string>
+    <string name="app_name" translatable="false">BMS USR</string>
+
+    <string name="button_ok">OK</string>
+    <string name="button_back">Back</string>
+    <string name="button_scan">Scan</string>
+    <string name="about_dialog_title">About program</string>
+    <string name="version_info">Version: %s</string>
+    <string name="about_dialog_message">
+        This app is designed to configure and manage the Wi-Fi settings of the USR-WIFI232-B2 module. It is intended for use with the GBL_2.45K3 battery from GS Energy Storage (SYL Battery), which uses standard firmware (AB_AIO_4850_V1212_12101456) and the AoBo protocol over CAN.\n\n
+
+        Author: Nick Kulikov (nickAS21)\n
+        GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
+    </string>
+
+    <string name="exit">Exit</string>
+    <string name="ssid_hint">SSID (required)</string>
+    <string name="password_hint">Password (required)</string>
+    <string name="connected_to">Connected to %s</string>
+    <string name="connection_to_waiting">Connecting to %s…</string>
+    <string name="connected_to_success">Connected to %s</string>
+    <string name="connection_failed_toast">Connection failed.</string>
+    <string name="connection_lost">Connection to %s lost.</string>
+    <string name="connection_to_failed">Connection to %s failed.</string>
+    <string name="wifimanager_not_initialized">WiFiManager not initialized</string>
+    <string name="wifi_off_for_scan">Wi-Fi is off. Turn it on to scan.</string>
+    <string name="location_off_for_scan">Turn on Location services to scan for Wi-Fi.</string>
+    <string name="location_permission_denied">Location permission denied. Wi-Fi scanning is not possible.</string>
+    <string name="scan_failed">Scan failed.</string>
+    <string name="no_location_permission_connect">No location permission. Cannot connect.</string>
+    <string name="cannot_add_or_find_network">Failed to add or find network.</string>
+    <string name="cannot_start_wifi_scan">Failed to start Wi-Fi scan</string>
+    <string name="scan_completed">Scan completed.</string>
+    <string name="github_url" translatable="false">https://github.com/nickAS21/BMSUSRProvision_Android</string>
+
+    <string name="main_prompt_text">Select a network to connect</string>
+    <string name="rescan_button_text">Scan again</string>
+
+    <string name="bms_networks_updated">BMS network list updated.</string>
+    <string name="bms_networks_updated_zero">BMS network list updated as empty.</string>
+    <string name="update_settings_success">BMS WiFi settings updated to the selected network.</string>
+    <string name="error_with_message">Error: %s</string>
+
+    <string name="content_desc_back">Back</string>
+    <string name="connected_to_title">Connected to:</string>
+    <string name="bms_networks_title">Available Wi-Fi networks from BMS:</string>
+    <string name="example_ssid">Example SSID</string>
+
+    <string name="invalid_packet_length">Invalid packet length.</string>
+    <string name="invalid_checksum">Invalid checksum.</string>
+    <string name="invalid_decode_response_length">Invalid decode Response. Length &lt; 6</string>
+    <string name="ssid_ok">ssid - OK</string>
+    <string name="password_ok">password - OK</string>
+    <string name="ssid_not_found_and_password_invalid">ssid not found and password invalid</string>
+    <string name="ssid_not_found">ssid not found</string>
+    <string name="password_invalid">password invalid</string>
+    <string name="hex_length_error">Hex string must have an even length.</string>
+    <string name="invalid_hex_char_error">Invalid hex character in string.</string>
+
+    <string name="socket_init_error">Socket initialization error: %s</string>
+    <string name="socket_not_initialized">Socket or MulticastLock not initialized.</string>
+    <string name="command_not_formed">Command is not formed. Command.length == 0</string>
+    <string name="udp_packet_sent">UDP packet sent.</string>
+    <string name="response_received">Response received</string>
+    <string name="no_response_from_bms">No response from BMS.</string>
+    <string name="send_receive_error">Error sending/receiving: %s</string>
+
+    <string name="bms_networks_updated_toast">BMS network list updated.</string>
+    <string name="update_settings_success_toast">BMS WiFi settings updated to the selected network.</string>
+    <string name="error_with_message_toast">Error: %s</string>
+
+    <string name="set_wifi_filter">Set Wi-Fi Filter</string>
+    <string name="dialog_set_filter_title">Set Filter for Wi-Fi Networks</string>
+    <string name="filter_updated_toast">Filter updated to: %s</string>
+    <string name="filter_cannot_be_empty">Filter cannot be empty.</string>
+    <string name="button_cancel">Cancel</string>
+
+    <string name="disable_filter_text">Disable Filter</string>
+    <string name="enable_filter_text">Enable Filter</string>
+    <string name="filter_enabled_toast">Filter enabled.</string>
+    <string name="filter_disabled_toast">Filter disabled.</string>
+    <string name="reset_filter_text">Reset Filter</string>
+    <string name="filter_reset_toast">Filter reset to:      \nEnabled=\'%1$b\', Val=\'%2$s\'</string>
+    <string name="indicate_of_process" translatable="false">Indicate of process</string>
+    <string name="icon_by_level" translatable="false">Icon by level</string>
 </resources>
