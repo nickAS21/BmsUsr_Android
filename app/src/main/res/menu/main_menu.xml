@@ -1,18 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/action_about"
-        android:title="@string/about_dialog_title" />
+        android:id="@+id/action_search"
+        android:title="@string/wifi_search_title"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/wifi_settings_title"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_filter"
-        android:title="@string/set_wifi_filter" />
+        android:title="@string/set_wifi_filter"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_toggle_filter"
-        android:title="@string/disable_filter_text" />
+        android:title="@string/disable_filter_text"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_reset_filter"
-        android:title="@string/reset_filter_text" />
+        android:title="@string/reset_filter_text"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_reset_bms_wifi_map"
+        android:title="@string/reset_bms_wifi_map_text"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_bms_entry"
+        android:title="@string/add_bms_entry_text"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete_bms_entry"
+        android:title="@string/delete_bms_entry_text"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/about_dialog_title"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_exit"
-        android:title="@string/exit" />
+        android:title="@string/exit"
+        app:showAsAction="never" />
 </menu>

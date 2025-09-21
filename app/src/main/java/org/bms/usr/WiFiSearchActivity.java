@@ -1,8 +1,13 @@
-package org.bms.bmsusrprovision;
+package org.bms.usr;
 
-import static org.bms.bmsusrprovision.service.HelperBms.CHOSEN_SSID_TEXT;
-import static org.bms.bmsusrprovision.service.HelperBms.CURRENT_SSID_START_TEXT;
-import static org.bms.bmsusrprovision.service.HelperBms.WIFI_FILTER_SSID_DEF;
+import static org.bms.usr.service.HelperBms.CHOSEN_BSSID_TEXT;
+import static org.bms.usr.service.HelperBms.CHOSEN_SSID_TEXT;
+import static org.bms.usr.service.HelperBms.CURRENT_SSID_START_TEXT;
+import static org.bms.usr.service.HelperBms.WIFI_FILTER_ENABLED_DEF;
+import static org.bms.usr.service.HelperBms.WIFI_FILTER_SSID_DEF;
+import static org.bms.usr.service.HelperBms.getWifiFilterSsid;
+import static org.bms.usr.service.HelperBms.isFilterEnabled;
+import static org.bms.usr.service.HelperBms.saveFilterSettings;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,7 +25,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -47,13 +51,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.bms.bmsusrprovision.service.CodecBms;
-import org.bms.bmsusrprovision.service.WifiListAdapter;
-import org.bms.bmsusrprovision.service.WifiNetwork;
+import org.bms.usr.service.WifiListAdapter;
+import org.bms.usr.service.WifiNetwork;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
+public class WiFiSearchActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
     private static final int PERMISSIONS_REQUEST_CODE = 1001;
     private WifiListAdapter adapter;
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
 
     private String pendingChosenSsid = null;
     private String currentSsidStart = null;
-    private boolean isFilterEnabled = true;
+    private Boolean isFilterEnabled = true;
 
     private String wifiFilterSsid; // Default filter string
 
@@ -93,13 +96,11 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CodecBms.setContext(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_wifi_search);
 
         // Load saved filter settings
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        wifiFilterSsid = sharedPreferences.getString("wifiFilterSsid", WIFI_FILTER_SSID_DEF);
-        isFilterEnabled = sharedPreferences.getBoolean("isFilterEnabled", true);
+        wifiFilterSsid = getWifiFilterSsid();
+        isFilterEnabled = isFilterEnabled();
 
         progressBar = findViewById(R.id.progressBar);
 
@@ -109,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         adapter = new WifiListAdapter( this, this);
         recyclerView.setAdapter(adapter);
 
+        ImageButton buttonBack = findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(v -> finish());
         Button buttonRescan = findViewById(R.id.buttonRescan);
         buttonRescan.setOnClickListener(v -> checkPermissionsAndScan());
 
@@ -133,6 +136,55 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean isFilterEnabledMenu = isFilterEnabled();
+        MenuHelper.prepareMenu(menu, this.getClass());
+        MenuItem filterItem = menu.findItem(R.id.action_filter);
+        if (filterItem != null) {
+            filterItem.setEnabled(isFilterEnabledMenu);
+        }
+        MenuItem toggleItem = menu.findItem(R.id.action_toggle_filter);
+        if (toggleItem != null) {
+            toggleItem.setTitle(isFilterEnabledMenu ? R.string.disable_filter_text : R.string.enable_filter_text);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_filter) {
+            showFilterDialog();
+            return true;
+        } else if (id == R.id.action_toggle_filter) {
+            isFilterEnabled = !isFilterEnabled;
+            saveFilterSettings(wifiFilterSsid, isFilterEnabled);
+
+            // Update the menu item title to reflect the new state
+            item.setTitle(isFilterEnabled ? R.string.disable_filter_text : R.string.enable_filter_text);
+            Toast.makeText(this, isFilterEnabled ? R.string.filter_enabled_toast : R.string.filter_disabled_toast, Toast.LENGTH_SHORT).show();
+            // Rescan to show filtered or unfiltered list
+            startWifiScan();
+            return true;
+        } else if (id == R.id.action_reset_filter) {
+            resetFilterToDefault();
+            // After resetting, we should probably update the menu item title as well
+            Toast.makeText(WiFiSearchActivity.this, getString(R.string.filter_reset_toast, isFilterEnabled, wifiFilterSsid), Toast.LENGTH_SHORT).show();
+            startWifiScan();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (!isReceiverRegistered) {
@@ -147,8 +199,9 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                 if (currentSsid != null && currentSsid.length() > 2) {
                     currentSsid = currentSsid.replace("\"", "");
                     if (pendingChosenSsid.equals(currentSsid)) {
-                        Intent intent = new Intent(this, WifiSettingsActivity.class);
+                        Intent intent = new Intent(this, WiFiProvisionActivity.class);
                         intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
+                        intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                         intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                         wifiSettingsLauncher.launch(intent);
                         pendingChosenSsid = null;
@@ -192,49 +245,6 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         // If necessary, you can close sockets or other resources here
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_about) {
-            showAboutDialog();
-            return true;
-        } else if (id == R.id.action_filter) {
-            showFilterDialog();
-            return true;
-        } else if (id == R.id.action_toggle_filter) {
-            isFilterEnabled = !isFilterEnabled;
-
-            // Save the new state of the filter
-            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isFilterEnabled", isFilterEnabled);
-            editor.apply();
-
-            // Update the menu item title to reflect the new state
-            item.setTitle(isFilterEnabled ? R.string.disable_filter_text : R.string.enable_filter_text);
-            Toast.makeText(this, isFilterEnabled ? R.string.filter_enabled_toast : R.string.filter_disabled_toast, Toast.LENGTH_SHORT).show();
-            // Rescan to show filtered or unfiltered list
-            startWifiScan();
-            return true;
-        } else if (id == R.id.action_reset_filter) {
-            resetFilterToDefault();
-            // After resetting, we should probably update the menu item title as well
-            Toast.makeText(MainActivity.this, getString(R.string.filter_reset_toast, isFilterEnabled, wifiFilterSsid), Toast.LENGTH_SHORT).show();
-            startWifiScan();
-            return true;
-        } else if (id == R.id.action_exit) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
     private void checkPermissionsAndScan() {
         if (!isReceiverRegistered) {
             registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -304,9 +314,10 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
         String currentSsid = (currentWifiInfo != null) ? currentWifiInfo.getSSID().replace("\"", "") : null;
         pendingChosenSsid = network.getSsid();
         if (pendingChosenSsid.equals(currentSsid)) {
-            // Selected the same network -> go directly to WifiSettingsActivity
-            Intent intent = new Intent(this, WifiSettingsActivity.class);
+            // Selected the same network -> go directly to WiFiProvisionActivity
+            Intent intent = new Intent(this, WiFiProvisionActivity.class);
             intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
+            intent.putExtra(CHOSEN_BSSID_TEXT, network.getBssid());
             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
             wifiSettingsLauncher.launch(intent);
             pendingChosenSsid = null;
@@ -346,10 +357,11 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                         String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
                         if (pendingChosenSsid.equals(connectedSsid)) {
-                            Toast.makeText(MainActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WiFiSearchActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
 
-                            Intent intent = new Intent(MainActivity.this, WifiSettingsActivity.class);
+                            Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
                             intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
+                            intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                             wifiSettingsLauncher.launch(intent);
                             pendingChosenSsid = null;
@@ -362,14 +374,14 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             @Override
             public void onUnavailable() {
                 super.onUnavailable();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_failed_toast), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(WiFiSearchActivity.this, getString(R.string.connection_failed_toast), Toast.LENGTH_LONG).show());
             }
 
             @Override
             public void onLost(@NonNull Network network) {
                 super.onLost(network);
                 if (pendingChosenSsid != null) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(WiFiSearchActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
                 }
             }
         };
@@ -435,10 +447,11 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                     String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
                     if (pendingChosenSsid.equals(connectedSsid)) {
                         runOnUiThread(() -> {
-                            Toast.makeText(MainActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WiFiSearchActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
 
-                            Intent intent = new Intent(MainActivity.this, WifiSettingsActivity.class);
+                            Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
                             intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
+                            intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                             wifiSettingsLauncher.launch(intent);
                             pendingChosenSsid = null;
@@ -456,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             public void onLost(@NonNull Network network) {
                 super.onLost(network);
                 if (pendingChosenSsid != null) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
+                    runOnUiThread(() -> Toast.makeText(WiFiSearchActivity.this, getString(R.string.connection_lost, pendingChosenSsid), Toast.LENGTH_LONG).show());
                 }
             }
         };
@@ -482,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
                         handler.postDelayed(() -> wifiManager.startScan(), RETRY_DELAY_MS * scanRetryCount);
                     } else {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(MainActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(WiFiSearchActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     updateWifiList(results);
@@ -626,13 +639,7 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
             String newFilter = input.getText().toString();
             if (!newFilter.isEmpty()) {
                 wifiFilterSsid = newFilter;
-                // Save both filter settings: string and state
-                SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("wifiFilterSsid", newFilter);
-                editor.putBoolean("isFilterEnabled", isFilterEnabled);
-                // used commit() for synchronous saving
-                editor.commit();
+                saveFilterSettings(wifiFilterSsid, isFilterEnabled);
 
                 Toast.makeText(this, getString(R.string.filter_updated_toast, newFilter), Toast.LENGTH_SHORT).show();
                 startWifiScan();
@@ -660,13 +667,8 @@ public class MainActivity extends AppCompatActivity implements WifiListAdapter.O
 
     private void resetFilterToDefault() {
         wifiFilterSsid = WIFI_FILTER_SSID_DEF;
-        isFilterEnabled = true;
-
+        isFilterEnabled = WIFI_FILTER_ENABLED_DEF;
         // Save default settings to SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("wifiFilterSsid", wifiFilterSsid);
-        editor.putBoolean("isFilterEnabled", isFilterEnabled);
-        editor.apply();
+        saveFilterSettings(wifiFilterSsid,  isFilterEnabled);
     }
 }

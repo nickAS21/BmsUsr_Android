@@ -1,4 +1,4 @@
-package org.bms.bmsusrprovision;
+package org.bms.usr;
 
 import android.content.Context;
 

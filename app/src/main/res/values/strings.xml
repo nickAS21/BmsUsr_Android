@@ -14,6 +14,11 @@
         GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
     </string>
 
+    <string name="press_again_to_exit">Click twice and quit</string>
+    <string name="wifi_search_title" translatable="false">WiFi USR Provision</string>
+    <string name="wifi_settings_title">WiFi USR settings</string>
+    <string name="wifi_bms_saved_title">WiFi BMS saved</string>
+
     <string name="exit">Exit</string>
     <string name="ssid_hint">SSID (required)</string>
     <string name="password_hint">Password (required)</string>
@@ -82,6 +87,16 @@
     <string name="filter_disabled_toast">Filter disabled.</string>
     <string name="reset_filter_text">Reset Filter</string>
     <string name="filter_reset_toast">Filter reset to:      \nEnabled=\'%1$b\', Val=\'%2$s\'</string>
+    <string name="reset_bms_wifi_map_text">Reset All Bms Wifi Map</string>
+    <string name="add_bms_entry_text">Add BMS Network</string>
+    <string name="dialog_add_bms_entry_title">Add New BMS Network</string>
+    <string name="ssid_input_hint">SSID</string>
+    <string name="bssid_input_hint">BSSID (MAC Address)</string>
+    <string name="entry_added_toast">Network %1$s added.</string>
+    <string name="delete_bms_entry_text">Delete BMS Network</string>
+    <string name="dialog_enter_ssid_title">Enter SSID to delete</string>
+    <string name="entry_deleted_toast">Entry for %1$s has been deleted.</string>
+    <string name="entry_not_found_toast">Network %1$s was not found.</string>
     <string name="indicate_of_process" translatable="false">Indicate of process</string>
     <string name="icon_by_level" translatable="false">Icon by level</string>
 </resources>

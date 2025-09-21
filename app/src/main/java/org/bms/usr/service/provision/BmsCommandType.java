@@ -1,4 +1,4 @@
-package org.bms.bmsusrprovision.service;
+package org.bms.usr.service.provision;
 public enum BmsCommandType {
 
     CMD_GET_WIFI_LIST(0x01, "req_wifi_list"),

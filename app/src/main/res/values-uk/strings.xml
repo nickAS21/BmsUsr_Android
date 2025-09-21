@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="press_again_to_exit">Двічі клацніть та вийдіть</string>
     <string name="button_ok">ОК</string>
     <string name="button_back">Назад</string>
     <string name="button_scan">Сканувати</string>
@@ -10,6 +11,9 @@
         Автор: Nick Kulikov (nickAS21)\n
         GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
     </string>
+    <string name="wifi_settings_title">WiFi USR налаштування</string>
+    <string name="wifi_bms_saved_title">WiFi BMS збережені</string>
+
     <string name="exit">Вихід</string>
     <string name="ssid_hint">SSID (обов\'язково)</string>
     <string name="password_hint">Пароль (обов\'язково)</string>
@@ -29,7 +33,7 @@
     <string name="cannot_start_wifi_scan">Не вдалося почати сканування Wi-Fi</string>
     <string name="scan_completed">Сканування завершено.</string>
 
-    <string name="main_prompt_text">Оберіть мережу для підключення</string>
+    <string name="main_prompt_text">Оберіть мережу\nдля підключення</string>
     <string name="rescan_button_text">Сканувати ще раз</string>
 
     <string name="bms_networks_updated">Список мереж від BMS оновлено.</string>
@@ -77,4 +81,14 @@
     <string name="filter_disabled_toast">Фільтр вимкнено.</string>
     <string name="reset_filter_text">Скинути фільтр</string>
     <string name="filter_reset_toast">Фільтр скинуто до:      \nЗаст.=\'%1$b\' Val=\'%2$s\'</string>
+    <string name="reset_bms_wifi_map_text">Видалення всіх WiFi BMS із пам\'яті </string>
+    <string name="add_bms_entry_text">Додати мережу BMS</string>
+    <string name="dialog_add_bms_entry_title">Додати нову мережу BMS</string>
+    <string name="ssid_input_hint">SSID</string>
+    <string name="bssid_input_hint">BSSID (MAC-адреса)</string>
+    <string name="entry_added_toast">Мережу %1$s додано.</string>
+    <string name="delete_bms_entry_text">Видалити мережу BMS</string>
+    <string name="dialog_enter_ssid_title">Введіть SSID для видалення</string>
+    <string name="entry_deleted_toast">Запис для %1$s видалено.</string>
+    <string name="entry_not_found_toast">Мережу %1$s не знайдено.</string>
 </resources>

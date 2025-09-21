@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BMS USR Provision"
+rootProject.name = "BMS USR"
 include ':app'

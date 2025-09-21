@@ -1,4 +1,4 @@
-package org.bms.bmsusrprovision.service;
+package org.bms.usr.service;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.bms.bmsusrprovision.R;
+import org.bms.usr.R;
 
 import java.util.ArrayList;
 import java.util.List;

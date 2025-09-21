@@ -1,18 +1,21 @@
-package org.bms.bmsusrprovision.service;
+package org.bms.usr.service;
 
-import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_GET_WIFI_LIST;
-import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_UPDATE_SETTINGS;
-import static org.bms.bmsusrprovision.service.BmsCommandType.RSP_ERRORS;
-import static org.bms.bmsusrprovision.service.BmsCommandType.RSP_UPDATE_SETTINGS;
-import static org.bms.bmsusrprovision.service.BmsCommandType.RSP_WIFI_LIST;
-import static org.bms.bmsusrprovision.service.BmsCommandType.UNKNOWN;
-import static org.bms.bmsusrprovision.service.HelperBms.BYTE_MASK_TO_255;
-import static org.bms.bmsusrprovision.service.HelperBms.BYTE_SEPARATOR_0;
-import static org.bms.bmsusrprovision.service.HelperBms.BYTE_SEPARATOR_1;
+import static org.bms.usr.service.provision.BmsCommandType.CMD_GET_WIFI_LIST;
+import static org.bms.usr.service.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
+import static org.bms.usr.service.provision.BmsCommandType.RSP_ERRORS;
+import static org.bms.usr.service.provision.BmsCommandType.RSP_UPDATE_SETTINGS;
+import static org.bms.usr.service.provision.BmsCommandType.RSP_WIFI_LIST;
+import static org.bms.usr.service.provision.BmsCommandType.UNKNOWN;
+import static org.bms.usr.service.HelperBms.BYTE_MASK_TO_255;
+import static org.bms.usr.service.HelperBms.BYTE_SEPARATOR_0;
+import static org.bms.usr.service.HelperBms.BYTE_SEPARATOR_1;
 
 import android.util.Log;
 
-import org.bms.bmsusrprovision.R;
+import org.bms.usr.R;
+import org.bms.usr.service.provision.BmsCommandType;
+import org.bms.usr.service.provision.ResultSendCommand;
+
 import android.content.Context;
 
 import java.io.ByteArrayOutputStream;

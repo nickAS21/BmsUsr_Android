@@ -1,11 +1,13 @@
-package org.bms.bmsusrprovision;
+package org.bms.usr;
 
-import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_GET_WIFI_LIST;
-import static org.bms.bmsusrprovision.service.BmsCommandType.CMD_UPDATE_SETTINGS;
-import static org.bms.bmsusrprovision.service.CodecBms.decodeResponse;
-import static org.bms.bmsusrprovision.service.CodecBms.getCommand;
-import static org.bms.bmsusrprovision.service.HelperBms.CHOSEN_SSID_TEXT;
-import static org.bms.bmsusrprovision.service.HelperBms.CURRENT_SSID_START_TEXT;
+import static org.bms.usr.service.provision.BmsCommandType.CMD_GET_WIFI_LIST;
+import static org.bms.usr.service.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
+import static org.bms.usr.service.CodecBms.decodeResponse;
+import static org.bms.usr.service.CodecBms.getCommand;
+import static org.bms.usr.service.HelperBms.CHOSEN_BSSID_TEXT;
+import static org.bms.usr.service.HelperBms.CHOSEN_SSID_TEXT;
+import static org.bms.usr.service.HelperBms.CURRENT_SSID_START_TEXT;
+import static org.bms.usr.service.HelperBms.addOrUpdateBmsWifiEntry;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,17 +28,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.bms.bmsusrprovision.service.BmsCommandType;
-import org.bms.bmsusrprovision.service.CodecBms;
-import org.bms.bmsusrprovision.service.ResultSendCommand;
-import org.bms.bmsusrprovision.service.UdpClient;
-import org.bms.bmsusrprovision.service.WifiListAdapter;
-import org.bms.bmsusrprovision.service.WifiNetwork;
+import org.bms.usr.service.provision.BmsCommandType;
+import org.bms.usr.service.provision.ResultSendCommand;
+import org.bms.usr.service.UdpClient;
+import org.bms.usr.service.WifiListAdapter;
+import org.bms.usr.service.WifiNetwork;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WifiSettingsActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
+public class WiFiProvisionActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
 
     private EditText editTextSsid;
@@ -50,31 +51,49 @@ public class WifiSettingsActivity extends AppCompatActivity implements WifiListA
     private ProgressBar progressBar;
 
     private String currentSsidStart;
+    private String connectedSsid;
+    private String connectedBSsid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CodecBms.setContext(this);
-        setContentView(R.layout.activity_wifi_settings);
+        setContentView(R.layout.activity_wifi_provision);
 
         TextView textViewConnectedTo = findViewById(R.id.textViewConnectedToSsid);
         editTextSsid = findViewById(R.id.editTextSsid);
         editTextPassword = findViewById(R.id.editTextPassword);
+
         buttonOk = findViewById(R.id.buttonOk);
         buttonOk.setEnabled(false);
         ImageButton buttonBack = findViewById(R.id.buttonBack);
         ImageButton buttonScan = findViewById(R.id.buttonScan);
+        buttonOk.setOnClickListener(v -> {
+            String ssid = editTextSsid.getText().toString();
+            String password = editTextPassword.getText().toString();
+
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }
+            startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+        });
+        buttonBack.setOnClickListener(v -> closeActivity());
+        buttonScan.setOnClickListener(v -> {
+            if (udpClient != null) {
+                startSendCommand(CMD_GET_WIFI_LIST);
+            }
+        });
+
         RecyclerView recyclerViewBmsNetworks = findViewById(R.id.recyclerViewBmsNetworks);
         recyclerViewBmsNetworks.setLayoutManager(new LinearLayoutManager(this));
         progressBar = findViewById(R.id.progressBar);
         bmsNetworksAdapter = new WifiListAdapter(this, this);
         recyclerViewBmsNetworks.setAdapter(bmsNetworksAdapter);
 
-        String connectedSsid = getIntent().getStringExtra(CHOSEN_SSID_TEXT);
+        connectedSsid = getIntent().getStringExtra(CHOSEN_SSID_TEXT);
+        connectedBSsid = getIntent().getStringExtra(CHOSEN_BSSID_TEXT);
         currentSsidStart = getIntent().getStringExtra(CURRENT_SSID_START_TEXT);
-        if (connectedSsid != null) {
-            textViewConnectedTo.setText(connectedSsid);
-        }
+        textViewConnectedTo.setText(connectedSsid);
 
         // Add TextWatcher to both input fields
         TextWatcher textWatcher = new TextWatcher() {
@@ -96,24 +115,6 @@ public class WifiSettingsActivity extends AppCompatActivity implements WifiListA
 
         editTextSsid.addTextChangedListener(textWatcher);
         editTextPassword.addTextChangedListener(textWatcher);
-
-        buttonOk.setOnClickListener(v -> {
-            String ssid = editTextSsid.getText().toString();
-            String password = editTextPassword.getText().toString();
-
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-            }
-            startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
-        });
-
-        buttonBack.setOnClickListener(v -> closeActivity());
-        buttonScan.setOnClickListener(v -> {
-            if (udpClient != null) {
-                startSendCommand(CMD_GET_WIFI_LIST);
-            }
-        });
 
         // Create and register OnBackPressedCallback
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -170,15 +171,17 @@ public class WifiSettingsActivity extends AppCompatActivity implements WifiListA
                     }
 //                    bmsNetworksList.addAll(networksFromBms);
                     bmsNetworksAdapter.setWifiNetworks(networksFromBms);
-                    Toast.makeText(WifiSettingsActivity.this, getString(R.string.bms_networks_updated), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WiFiProvisionActivity.this, getString(R.string.bms_networks_updated), Toast.LENGTH_SHORT).show();
                 } else {
                     bmsNetworksAdapter.setWifiNetworks(new ArrayList<>());
                     errorSendCommand (getString(R.string.bms_networks_updated_zero));
                 }
 
                 break;
-            case RSP_UPDATE_SETTINGS: // configuration result
-                Toast.makeText(WifiSettingsActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
+            case RSP_UPDATE_SETTINGS: // configuration saved result ok
+                Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
+                // === UPDATE MAP IN SHARED PREFERENCES ===
+                addOrUpdateBmsWifiEntry(connectedBSsid, connectedSsid);
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());
@@ -188,7 +191,7 @@ public class WifiSettingsActivity extends AppCompatActivity implements WifiListA
     private void errorSendCommand (String message) {
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
-            Toast.makeText(WifiSettingsActivity.this, getString(R.string.error_with_message, message), Toast.LENGTH_LONG).show();
+            Toast.makeText(WiFiProvisionActivity.this, getString(R.string.error_with_message, message), Toast.LENGTH_LONG).show();
         });
     }
     private void closeActivity() {

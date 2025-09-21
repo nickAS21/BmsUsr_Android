@@ -1,4 +1,4 @@
-package org.bms.bmsusrprovision.service;
+package org.bms.usr.service.provision;
 
 import java.util.List;
 

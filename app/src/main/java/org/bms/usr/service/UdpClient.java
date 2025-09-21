@@ -1,9 +1,9 @@
-package org.bms.bmsusrprovision.service;
+package org.bms.usr.service;
 
-import static org.bms.bmsusrprovision.service.HelperBms.BROADCAST_IP;
-import static org.bms.bmsusrprovision.service.HelperBms.PORT_DEF;
-import static org.bms.bmsusrprovision.service.HelperBms.TARGET_PORT_DEF;
-import static org.bms.bmsusrprovision.service.HelperBms.TIMEOUT;
+import static org.bms.usr.service.HelperBms.BROADCAST_IP;
+import static org.bms.usr.service.HelperBms.PORT_DEF;
+import static org.bms.usr.service.HelperBms.TARGET_PORT_DEF;
+import static org.bms.usr.service.HelperBms.TIMEOUT;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import org.bms.bmsusrprovision.R;
+import org.bms.usr.R;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

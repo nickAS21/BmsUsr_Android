@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".WiFiSettingsActivity">
 
     <ImageButton
         android:id="@+id/buttonBack"
@@ -15,110 +18,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/buttonScan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_search"
-        android:contentDescription="@string/rescan_button_text"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
-        android:id="@+id/textViewConnectedToTitle"
-        android:layout_width="wrap_content"
+        android:id="@+id/textViewTitle"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/connected_to_title"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack" />
-
-    <TextView
-        android:id="@+id/textViewConnectedToSsid"
+        android:text="@string/wifi_bms_saved_title"
+        android:textAlignment="center"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/textViewConnectedToTitle"
-        app:layout_constraintTop_toTopOf="@id/textViewConnectedToTitle" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/ssidInputLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonBack"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/textViewConnectedToTitle">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextSsid"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="@string/ssid_hint"
-            android:inputType="text" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/passwordInputLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:endIconMode="password_toggle"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ssidInputLayout">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextPassword"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="@string/password_hint"
-            android:inputType="textPassword" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-
-    <Button
-        android:id="@+id/buttonOk"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/button_ok"
-        app:layout_constraintTop_toBottomOf="@id/passwordInputLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/textViewBmsNetworksTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/bms_networks_title"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/buttonOk"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_marginTop="16dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewBmsNetworks"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/textViewBmsNetworksTitle"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonReset" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+    <Button
+        android:id="@+id/buttonReset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="@string/reset_bms_wifi_map_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
