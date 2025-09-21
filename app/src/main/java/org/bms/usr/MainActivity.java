@@ -2,7 +2,6 @@ package org.bms.usr;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +22,9 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.bms.usr.provision.WiFiSearchActivity;
+import org.bms.usr.settings.WiFiSettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 

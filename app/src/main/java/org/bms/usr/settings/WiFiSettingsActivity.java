@@ -1,9 +1,9 @@
-package org.bms.usr;
+package org.bms.usr.settings;
 
-import static org.bms.usr.service.HelperBms.addOrUpdateBmsWifiEntry;
-import static org.bms.usr.service.HelperBms.getBmsWifiMap;
-import static org.bms.usr.service.HelperBms.removeBmsWifiEntry;
-import static org.bms.usr.service.HelperBms.resetBmsWifiMap;
+import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
+import static org.bms.usr.settings.HelperBmsSettings.getBmsWifiMap;
+import static org.bms.usr.settings.HelperBmsSettings.removeBmsWifiEntry;
+import static org.bms.usr.settings.HelperBmsSettings.resetBmsWifiMap;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -23,6 +23,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.bms.usr.MenuHelper;
+import org.bms.usr.R;
 import org.bms.usr.service.WifiListAdapter;
 import org.bms.usr.service.WifiNetwork;
 

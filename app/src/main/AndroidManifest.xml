@@ -32,7 +32,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BMSUSRProvision">
         <activity
-            android:name=".WiFiSettingsActivity"
+            android:name=".settings.WiFiSettingsActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -43,8 +43,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WiFiSearchActivity" />
-        <activity android:name=".WiFiProvisionActivity" />
+        <activity android:name=".provision.WiFiSearchActivity" />
+        <activity android:name=".provision.WiFiProvisionActivity" />
     </application>
 
 </manifest>

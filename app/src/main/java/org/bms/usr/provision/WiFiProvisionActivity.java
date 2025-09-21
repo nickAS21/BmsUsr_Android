@@ -1,13 +1,13 @@
-package org.bms.usr;
+package org.bms.usr.provision;
 
-import static org.bms.usr.service.provision.BmsCommandType.CMD_GET_WIFI_LIST;
-import static org.bms.usr.service.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
-import static org.bms.usr.service.CodecBms.decodeResponse;
-import static org.bms.usr.service.CodecBms.getCommand;
-import static org.bms.usr.service.HelperBms.CHOSEN_BSSID_TEXT;
-import static org.bms.usr.service.HelperBms.CHOSEN_SSID_TEXT;
-import static org.bms.usr.service.HelperBms.CURRENT_SSID_START_TEXT;
-import static org.bms.usr.service.HelperBms.addOrUpdateBmsWifiEntry;
+import static org.bms.usr.provision.BmsCommandType.CMD_GET_WIFI_LIST;
+import static org.bms.usr.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
+import static org.bms.usr.provision.CodecBmsProvision.decodeResponse;
+import static org.bms.usr.provision.CodecBmsProvision.getCommand;
+import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
+import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
+import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
+import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,11 +28,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.bms.usr.service.provision.BmsCommandType;
-import org.bms.usr.service.provision.ResultSendCommand;
-import org.bms.usr.service.UdpClient;
+import org.bms.usr.R;
+import org.bms.usr.transport.ResultSendCommand;
+import org.bms.usr.transport.UdpClient;
 import org.bms.usr.service.WifiListAdapter;
 import org.bms.usr.service.WifiNetwork;
+import org.bms.usr.transport.WiFiBmsListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,7 +127,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         getOnBackPressedDispatcher().addCallback(this, callback);
 
         // Initialize client and start scan
-        udpClient = new UdpClient(this, new UdpClient.UdpListener() {
+        udpClient = new UdpClient(this, new WiFiBmsListener() {
             @Override
             public void onDataReceived(byte[] ssids) {
                 runOnUiThread(() -> {

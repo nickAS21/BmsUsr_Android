@@ -2,7 +2,9 @@
 package org.bms.usr;
 
 import android.view.Menu;
-import android.view.MenuItem;
+
+import org.bms.usr.provision.WiFiSearchActivity;
+import org.bms.usr.settings.WiFiSettingsActivity;
 
 public class MenuHelper {
 

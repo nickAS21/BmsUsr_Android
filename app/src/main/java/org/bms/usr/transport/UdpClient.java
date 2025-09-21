@@ -1,9 +1,9 @@
-package org.bms.usr.service;
+package org.bms.usr.transport;
 
-import static org.bms.usr.service.HelperBms.BROADCAST_IP;
-import static org.bms.usr.service.HelperBms.PORT_DEF;
-import static org.bms.usr.service.HelperBms.TARGET_PORT_DEF;
-import static org.bms.usr.service.HelperBms.TIMEOUT;
+import static org.bms.usr.provision.HelperBmsProvision.BROADCAST_IP;
+import static org.bms.usr.provision.HelperBmsProvision.PORT_DEF;
+import static org.bms.usr.provision.HelperBmsProvision.TARGET_PORT_DEF;
+import static org.bms.usr.provision.HelperBmsProvision.TIMEOUT;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
@@ -29,14 +29,14 @@ public class UdpClient {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Context context;
 
-    public interface UdpListener {
-        void onDataReceived(byte[] ssids);
-        void onError(String message);
-    }
+//    public interface UdpListener {
+//        void onDataReceived(byte[] ssids);
+//        void onError(String message);
+//    }
 
-    private final UdpListener listener;
+    private final WiFiBmsListener listener;
 
-    public UdpClient(Context context, UdpListener listener) {
+    public UdpClient(Context context, WiFiBmsListener listener) {
         this.listener = listener;
         this.context = context;
         try {

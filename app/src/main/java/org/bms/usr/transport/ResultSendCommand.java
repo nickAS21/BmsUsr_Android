@@ -1,4 +1,6 @@
-package org.bms.usr.service.provision;
+package org.bms.usr.transport;
+
+import org.bms.usr.provision.BmsCommandType;
 
 import java.util.List;
 

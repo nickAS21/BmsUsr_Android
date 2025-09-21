@@ -1,20 +1,20 @@
-package org.bms.usr.service;
+package org.bms.usr.provision;
 
-import static org.bms.usr.service.provision.BmsCommandType.CMD_GET_WIFI_LIST;
-import static org.bms.usr.service.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
-import static org.bms.usr.service.provision.BmsCommandType.RSP_ERRORS;
-import static org.bms.usr.service.provision.BmsCommandType.RSP_UPDATE_SETTINGS;
-import static org.bms.usr.service.provision.BmsCommandType.RSP_WIFI_LIST;
-import static org.bms.usr.service.provision.BmsCommandType.UNKNOWN;
-import static org.bms.usr.service.HelperBms.BYTE_MASK_TO_255;
-import static org.bms.usr.service.HelperBms.BYTE_SEPARATOR_0;
-import static org.bms.usr.service.HelperBms.BYTE_SEPARATOR_1;
+import static org.bms.usr.provision.BmsCommandType.CMD_GET_WIFI_LIST;
+import static org.bms.usr.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
+import static org.bms.usr.provision.BmsCommandType.RSP_ERRORS;
+import static org.bms.usr.provision.BmsCommandType.RSP_UPDATE_SETTINGS;
+import static org.bms.usr.provision.BmsCommandType.RSP_WIFI_LIST;
+import static org.bms.usr.provision.BmsCommandType.UNKNOWN;
+import static org.bms.usr.provision.HelperBmsProvision.BYTE_MASK_TO_255;
+import static org.bms.usr.provision.HelperBmsProvision.BYTE_SEPARATOR_0;
+import static org.bms.usr.provision.HelperBmsProvision.BYTE_SEPARATOR_1;
 
 import android.util.Log;
 
 import org.bms.usr.R;
-import org.bms.usr.service.provision.BmsCommandType;
-import org.bms.usr.service.provision.ResultSendCommand;
+import org.bms.usr.service.WifiNetwork;
+import org.bms.usr.transport.ResultSendCommand;
 
 import android.content.Context;
 
@@ -27,9 +27,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * CodecBms is responsible for encoding and decoding BMS protocol commands.
+ * CodecBmsProvision is responsible for encoding and decoding BMS protocol commands.
  */
-public class CodecBms {
+public class CodecBmsProvision {
 
     static String TAG = "CodecBMs";
     private static Context context;

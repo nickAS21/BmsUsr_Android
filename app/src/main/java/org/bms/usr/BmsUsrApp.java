@@ -3,7 +3,7 @@ package org.bms.usr;
 import android.app.Application;
 import android.content.SharedPreferences;
 
-import org.bms.usr.service.CodecBms;
+import org.bms.usr.provision.CodecBmsProvision;
 
 public class BmsUsrApp extends Application {
 
@@ -14,8 +14,8 @@ public class BmsUsrApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Init the CodecBms one time
-        CodecBms.setContext(this);
+        // Init the CodecBmsProvision one time
+        CodecBmsProvision.setContext(this);
 
         // Get and hold the SharedPreferences object for the app lifetime
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
