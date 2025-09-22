@@ -21,15 +21,23 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiVi
     private List<WifiNetwork> wifiNetworks;
     private final OnItemClickListener listener;
     private final Context context;
+    private OnInfoClickListener infoClickListener;
+
 
     public interface OnItemClickListener {
         void onItemClick(WifiNetwork network);
     }
 
-    public WifiListAdapter(Context context, OnItemClickListener listener) {
+    public interface OnInfoClickListener {
+        void onInfoClick(WifiNetwork network);
+    }
+
+
+    public WifiListAdapter(Context context, OnItemClickListener listener, OnInfoClickListener infoClickListener) {
         this.wifiNetworks =new ArrayList<>();
         this.listener = listener;
         this.context = context;
+        this.infoClickListener = infoClickListener;
     }
 
     @NonNull
@@ -43,6 +51,13 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiVi
     public void onBindViewHolder(@NonNull WifiViewHolder holder, int position) {
         WifiNetwork network = wifiNetworks.get(position);
         holder.textViewSsid.setText(network.getSsid());
+        holder.textViewBSsid.setText(network.getBSsid());
+        holder.imageViewInfo.setVisibility(infoClickListener != null ? View.VISIBLE : View.GONE);
+        holder.imageViewInfo.setOnClickListener(v -> {
+            if (infoClickListener != null) {
+                infoClickListener.onInfoClick(network);
+            }
+        });
 
         // Find icon by secured
         int iconRes = getWifiSignalIcon(network.getSignalLevel(), network.isSecured());
@@ -88,14 +103,18 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiVi
 
     public static class WifiViewHolder extends RecyclerView.ViewHolder {
         TextView textViewSsid;
+        TextView textViewBSsid;
         ImageView imageViewTick;
         ImageView imageViewWifiSignal;
+        ImageView imageViewInfo;
 
         public WifiViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewSsid = itemView.findViewById(R.id.textViewSsid);
+            textViewBSsid = itemView.findViewById(R.id.textViewBSsid);
             imageViewTick = itemView.findViewById(R.id.imageViewTick);
             imageViewWifiSignal = itemView.findViewById(R.id.imageViewWifiSignal);
+            imageViewInfo = itemView.findViewById(R.id.imageViewInfo);
         }
     }
 
@@ -130,16 +149,22 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiVi
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).getSsid().equals(newList.get(newItemPosition).getSsid());
+            WifiNetwork oldNetwork = oldList.get(oldItemPosition);
+            WifiNetwork newNetwork = newList.get(newItemPosition);
+            // Вважаємо однаковим елементом, якщо збігається SSID
+            return oldNetwork.getSsid().equals(newNetwork.getSsid());
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            final WifiNetwork oldNetwork = oldList.get(oldItemPosition);
-            final WifiNetwork newNetwork = newList.get(newItemPosition);
-            return oldNetwork.getSignalLevel() == newNetwork.getSignalLevel() &&
-                    oldNetwork.isSecured() == newNetwork.isSecured() &&
-                    oldNetwork.isCurrent() == newNetwork.isCurrent();
+            WifiNetwork oldNetwork = oldList.get(oldItemPosition);
+            WifiNetwork newNetwork = newList.get(newItemPosition);
+
+            return oldNetwork.getSsid().equals(newNetwork.getSsid())
+                    && oldNetwork.getBSsid().equals(newNetwork.getBSsid())
+                    && oldNetwork.getSignalLevel() == newNetwork.getSignalLevel()
+                    && oldNetwork.isSecured() == newNetwork.isSecured()
+                    && oldNetwork.isCurrent() == newNetwork.isCurrent();
         }
     }
 }

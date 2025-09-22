@@ -50,7 +50,9 @@
     <string name="content_desc_back">Back</string>
     <string name="connected_to_title">Connected to:</string>
     <string name="bms_networks_title">Available Wi-Fi networks from BMS:</string>
-    <string name="example_ssid">Example SSID</string>
+    <string name="network_info_title">About this network</string>
+    <string name="example_ssid">Values SSID</string>
+    <string name="example_bssid">Values BSsid</string>
 
     <string name="invalid_packet_length">Invalid packet length.</string>
     <string name="invalid_checksum">Invalid checksum.</string>
@@ -73,10 +75,14 @@
 
     <string name="bms_networks_updated_toast">BMS network list updated.</string>
     <string name="update_settings_success_toast">BMS WiFi settings updated to the selected network.</string>
+    <string name="dialog_duplicate_entry_title">Duplicate Wi-Fi BMS</string>
+    <string name="dialog_duplicate_entry_message">Wi-Fi BMS [%s], already exists, overwrite?</string>
+    <string name="dialog_button_replace">Replace</string>
     <string name="error_with_message_toast">Error: %s</string>
 
     <string name="set_wifi_filter">Set Wi-Fi Filter</string>
     <string name="dialog_set_filter_title">Set Filter for Wi-Fi Networks</string>
+
     <string name="filter_updated_toast">Filter updated to: %s</string>
     <string name="filter_cannot_be_empty">Filter cannot be empty.</string>
     <string name="button_cancel">Cancel</string>
@@ -89,10 +95,13 @@
     <string name="filter_reset_toast">Filter reset to:      \nEnabled=\'%1$b\', Val=\'%2$s\'</string>
     <string name="reset_bms_wifi_map_text">Reset All Bms Wifi Map</string>
     <string name="add_bms_entry_text">Add BMS Network</string>
+    <string name="updated_bms_entry_text">Edit BMS Network</string>
     <string name="dialog_add_bms_entry_title">Add New BMS Network</string>
+    <string name="dialog_updated_bms_entry_title">Updated BMS Network</string>
     <string name="ssid_input_hint">SSID</string>
     <string name="bssid_input_hint">BSSID (MAC Address)</string>
     <string name="entry_added_toast">Network %1$s added.</string>
+    <string name="entry_updated_toast">Network %1$s updated.</string>
     <string name="delete_bms_entry_text">Delete BMS Network</string>
     <string name="dialog_enter_ssid_title">Enter SSID to delete</string>
     <string name="entry_deleted_toast">Entry for %1$s has been deleted.</string>

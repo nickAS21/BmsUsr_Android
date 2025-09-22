@@ -38,6 +38,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_updated_bms_entry"
+        android:title="@string/updated_bms_entry_text"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_delete_bms_entry"
         android:title="@string/delete_bms_entry_text"
         app:showAsAction="never" />

@@ -1,5 +1,6 @@
 package org.bms.usr.transport;
 
+import static org.bms.usr.BmsUsrApp.getWifiManager;
 import static org.bms.usr.provision.HelperBmsProvision.BROADCAST_IP;
 import static org.bms.usr.provision.HelperBmsProvision.PORT_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.TARGET_PORT_DEF;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import org.bms.usr.BmsUsrApp;
 import org.bms.usr.R;
 
 import java.io.IOException;
@@ -45,7 +47,7 @@ public class UdpClient {
             socket.setReuseAddress(true);
             socket.bind(new InetSocketAddress(PORT_DEF));
 
-            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = getWifiManager();;
             if (wifiManager != null) {
                 multicastLock = wifiManager.createMulticastLock("BMS_MulticastLock");
                 multicastLock.setReferenceCounted(true);

@@ -1,9 +1,9 @@
 package org.bms.usr.provision;
 
+import static org.bms.usr.BmsUsrApp.getWifiManager;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
-import static org.bms.usr.provision.HelperBmsProvision.TIME_OUT_WIFI_SEARCH;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_ENABLED_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_SSID_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.getWifiFilterSsid;
@@ -33,7 +33,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -44,11 +43,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +50,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.bms.usr.MenuHelper;
@@ -119,7 +112,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         RecyclerView recyclerView = findViewById(R.id.recyclerViewWifiList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 //        wifiNetworks = new ArrayList<>();
-        adapter = new WifiListAdapter( this, this);
+        adapter = new WifiListAdapter( this, this, null);
         recyclerView.setAdapter(adapter);
 
         ImageButton buttonBack = findViewById(R.id.buttonBack);
@@ -127,7 +120,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         Button buttonRescan = findViewById(R.id.buttonRescan);
         buttonRescan.setOnClickListener(v -> restartWifiScan());
 
-        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager = getWifiManager();;
         wifiScanReceiver = new WifiScanReceiver();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -272,10 +265,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     @Override
     protected void onPause() {
         super.onPause();
-//        if (isReceiverRegistered) {
-//            unregisterReceiver(wifiScanReceiver);
-//            isReceiverRegistered = false;
-//        }
+
         if (networkCallback != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback);
             networkCallback = null;
@@ -296,6 +286,66 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     protected void onDestroy() {
         super.onDestroy();
         // If necessary, you can close sockets or other resources here
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                restartWifiScan();
+            } else {
+                Toast.makeText(this, getString(R.string.location_permission_denied), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void onItemClick(WifiNetwork network) {
+        WifiInfo currentWifiInfo = wifiManager.getConnectionInfo();
+        String currentSsid = (currentWifiInfo != null) ? currentWifiInfo.getSSID().replace("\"", "") : null;
+        pendingChosenSsid = network.getSsid();
+        if (pendingChosenSsid.equals(currentSsid)) {
+            // Selected the same network -> go directly to WiFiProvisionActivity
+            Intent intent = new Intent(this, WiFiProvisionActivity.class);
+            intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
+            intent.putExtra(CHOSEN_BSSID_TEXT, network.getBSsid());
+            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+            wifiProvisionLauncher.launch(intent);
+            pendingChosenSsid = null;
+        } else {
+            // Selected a new network -> save and wait for connection confirmation
+            Toast.makeText(this, getString(R.string.connection_to_waiting, pendingChosenSsid), Toast.LENGTH_SHORT).show();
+            connectToWifi();
+        }
+    }
+
+    public class WifiScanReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            List<ScanResult> results = getWifiManager().getScanResults();
+            isScanCompleted = true;
+            progressBar.setVisibility(View.GONE);
+            handler.removeCallbacksAndMessages(null);
+            if (results != null && !results.isEmpty()) {
+                updateWifiList(results);
+            } else {
+                boolean extra = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, true);
+                if (!extra || results == null || results.isEmpty()) {
+                    if (scanRetryCount < MAX_SCAN_RETRIES) {
+                        scanRetryCount++;
+                        handler.postDelayed(() -> wifiManager.startScan(), RETRY_DELAY_MS * scanRetryCount);
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(WiFiSearchActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    updateWifiList(results);
+                }
+            }
+        }
     }
     private void checkWiFiPermissions() {
         if (!isReceiverRegistered) {
@@ -351,8 +401,8 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         isScanCompleted = false;
         scanRetryCount = 0;
 
-        // 1) показати кешовані результати одразу
-        List<ScanResult> cachedResults = wifiManager.getScanResults();
+        // 1) showing result scan
+        @SuppressLint("MissingPermission") List<ScanResult> cachedResults = wifiManager.getScanResults();
         if (cachedResults != null && !cachedResults.isEmpty()) {
             updateWifiList(cachedResults);
             progressBar.setVisibility(View.GONE); // cash showing → progressBar is closing
@@ -369,38 +419,6 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         }, 1500);
     }
 
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                restartWifiScan();
-            } else {
-                Toast.makeText(this, getString(R.string.location_permission_denied), Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    @Override
-    public void onItemClick(WifiNetwork network) {
-        WifiInfo currentWifiInfo = wifiManager.getConnectionInfo();
-        String currentSsid = (currentWifiInfo != null) ? currentWifiInfo.getSSID().replace("\"", "") : null;
-        pendingChosenSsid = network.getSsid();
-        if (pendingChosenSsid.equals(currentSsid)) {
-            // Selected the same network -> go directly to WiFiProvisionActivity
-            Intent intent = new Intent(this, WiFiProvisionActivity.class);
-            intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
-            intent.putExtra(CHOSEN_BSSID_TEXT, network.getBssid());
-            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-            wifiProvisionLauncher.launch(intent);
-            pendingChosenSsid = null;
-        } else {
-            // Selected a new network -> save and wait for connection confirmation
-            Toast.makeText(this, getString(R.string.connection_to_waiting, pendingChosenSsid), Toast.LENGTH_SHORT).show();
-            connectToWifi();
-        }
-    }
 
     private void connectToWifi() {
         if (!isFineLocation) {
@@ -551,38 +569,10 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         };
         connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
     }
-
-    class WifiScanReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            List<ScanResult> results = wifiManager.getScanResults();
-            isScanCompleted = true;
-            progressBar.setVisibility(View.GONE);
-            handler.removeCallbacksAndMessages(null);
-            if (results != null && !results.isEmpty()) {
-                updateWifiList(results);
-            } else {
-                boolean extra = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, true);
-                if (!extra || results == null || results.isEmpty()) {
-                    if (scanRetryCount < MAX_SCAN_RETRIES) {
-                        scanRetryCount++;
-                        handler.postDelayed(() -> wifiManager.startScan(), RETRY_DELAY_MS * scanRetryCount);
-                    } else {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(WiFiSearchActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    updateWifiList(results);
-                }
-            }
-        }
-    }
-
     private void updateWifiList(List<ScanResult> scanResults) {
         List<WifiNetwork> wifiNetworks = new ArrayList<>();
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
         String currentSsid = (wifiInfo != null) ? wifiInfo.getSSID().replace("\"", "") : null;
 
         if (currentSsid != null && currentSsid.startsWith("\"") && currentSsid.endsWith("\"")) {
@@ -665,42 +655,6 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         } else {
             return !locationManager.getProviders(true).isEmpty();
         }
-    }
-
-    private void showAboutDialog() {
-        String aboutMessage = getString(R.string.about_dialog_message) + "\n\n" +
-                getString(R.string.github_url);
-        SpannableString spannableString = new SpannableString(aboutMessage);
-        String githubUrl = getString(R.string.github_url);
-        int startIndex = aboutMessage.indexOf(githubUrl);
-        int endIndex = startIndex + githubUrl.length();
-
-        if (startIndex >= 0) {
-            spannableString.setSpan(new ClickableSpan() {
-                @Override
-                public void onClick(@NonNull View widget) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(githubUrl));
-                    startActivity(browserIntent);
-                }
-            }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-
-        TextView messageTextView = new TextView(this);
-        messageTextView.setText(spannableString);
-        messageTextView.setMovementMethod(LinkMovementMethod.getInstance()); // This is crucial for making the link clickable
-
-        // Convert 16dp to pixels
-        int paddingInDp = 16;
-        int paddingInPx = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, paddingInDp, getResources().getDisplayMetrics());
-        // Set padding for TextView (left, top, right, bottom)
-        messageTextView.setPadding(paddingInPx, paddingInPx, paddingInPx, paddingInPx);
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.about_dialog_title)
-                .setView(messageTextView)
-                .setPositiveButton(R.string.button_ok, null)
-                .show();
     }
 
     private void showFilterDialog() {

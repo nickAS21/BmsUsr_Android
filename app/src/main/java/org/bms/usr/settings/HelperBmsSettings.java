@@ -25,9 +25,13 @@ public class HelperBmsSettings {
         return gson.fromJson(json, type);
     }
 
-    public static void addOrUpdateBmsWifiEntry(String bssid, String ssid) {
+    /**
+     * Example^
+     * StarlinkDachaWifi -> 3e:90:1f:56:1d:28 -> IPv4: 192.168.1.51
+     */
+    public static void addOrUpdateBmsWifiEntry(String ssid, String bssid) {
         Map<String, String> bmsWifiMap = getBmsWifiMap();
-        bmsWifiMap.put(bssid, ssid);
+        bmsWifiMap.put(ssid, bssid);
         saveBmsWifiMap(bmsWifiMap);
     }
 
@@ -37,9 +41,9 @@ public class HelperBmsSettings {
         editor.apply();
     }
 
-    public static boolean removeBmsWifiEntry(String bssid) {
+    public static boolean removeBmsWifiEntry(String ssid) {
         Map<String, String> bmsWifiMap = getBmsWifiMap();
-        boolean wasRemoved = bmsWifiMap.remove(bssid) != null;
+        boolean wasRemoved = bmsWifiMap.remove(ssid) != null;
         if (wasRemoved) {
             saveBmsWifiMap(bmsWifiMap);
         }

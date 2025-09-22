@@ -22,7 +22,16 @@
         android:layout_weight="1"
         android:layout_gravity="center_vertical"
         android:text="@string/example_ssid"
-        android:textSize="18sp" />
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/textViewBSsid"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:text="@string/example_bssid"
+        android:textSize="14sp" />
 
     <ImageView
         android:id="@+id/imageViewTick"
@@ -31,6 +40,16 @@
         android:layout_gravity="center_vertical"
         android:contentDescription="@string/indicate_of_process"
         android:src="@drawable/ic_check_circle"
+        android:visibility="gone"
+        app:tint="@color/green" />
+
+    <ImageView
+        android:id="@+id/imageViewInfo"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/indicate_of_process"
+        android:src="@drawable/set_info_circle"
         android:visibility="gone"
         app:tint="@color/green" />
 

@@ -12,11 +12,11 @@ public class WifiNetwork {
     }
 
     public WifiNetwork(String ssid, String bssid, int signalLevel, boolean isCurrent, boolean isCurrentStart, boolean secured) {
+        this.ssid = ssid;
         this.bssid = bssid;
         this.signalLevel = signalLevel;
         this.isCurrent = isCurrent;
         this.isCurrentSsidStart = isCurrentStart;
-        this.ssid = ssid;
         this.secured = secured;
     }
 
@@ -27,7 +27,7 @@ public class WifiNetwork {
         this.ssid = ssid;
     }
 
-    public String getBssid() {
+    public String getBSsid() {
         return this.bssid;
     }
 

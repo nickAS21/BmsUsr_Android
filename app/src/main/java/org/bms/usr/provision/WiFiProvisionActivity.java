@@ -88,7 +88,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         RecyclerView recyclerViewBmsNetworks = findViewById(R.id.recyclerViewBmsNetworks);
         recyclerViewBmsNetworks.setLayoutManager(new LinearLayoutManager(this));
         progressBar = findViewById(R.id.progressBar);
-        bmsNetworksAdapter = new WifiListAdapter(this, this);
+        bmsNetworksAdapter = new WifiListAdapter(this, this, null);
         recyclerViewBmsNetworks.setAdapter(bmsNetworksAdapter);
 
         connectedSsid = getIntent().getStringExtra(CHOSEN_SSID_TEXT);
@@ -182,27 +182,11 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             case RSP_UPDATE_SETTINGS: // configuration saved result ok
                 Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
                 // === UPDATE MAP IN SHARED PREFERENCES ===
-                addOrUpdateBmsWifiEntry(connectedBSsid, connectedSsid);
+                addOrUpdateBmsWifiEntry(connectedSsid, connectedBSsid);
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());
         }
-    }
-
-    private void errorSendCommand (String message) {
-        runOnUiThread(() -> {
-            progressBar.setVisibility(View.GONE);
-            Toast.makeText(WiFiProvisionActivity.this, getString(R.string.error_with_message, message), Toast.LENGTH_LONG).show();
-        });
-    }
-    private void closeActivity() {
-        if (udpClient != null) {
-            udpClient.closeSocket();
-        }
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-        setResult(RESULT_OK, resultIntent);
-        finish();
     }
 
     @Override
@@ -219,5 +203,22 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         if (udpClient != null) {
             udpClient.closeSocket();
         }
+    }
+
+
+    private void errorSendCommand (String message) {
+        runOnUiThread(() -> {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(WiFiProvisionActivity.this, getString(R.string.error_with_message, message), Toast.LENGTH_LONG).show();
+        });
+    }
+    private void closeActivity() {
+        if (udpClient != null) {
+            udpClient.closeSocket();
+        }
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 }

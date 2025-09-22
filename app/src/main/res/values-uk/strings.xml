@@ -38,12 +38,17 @@
 
     <string name="bms_networks_updated">Список мереж від BMS оновлено.</string>
     <string name="update_settings_success">Налаштування BMS WiFi на обрану мережу - оновлено.</string>
+    <string name="dialog_duplicate_entry_title">Дублікат Wi-Fi BMS</string>
+    <string name="dialog_duplicate_entry_message">Wi-Fi BMS [%s], вже існує, перзаписати?</string>
+    <string name="dialog_button_replace">Перезаписати</string>
     <string name="error_with_message">Помилка: %s</string>
 
     <string name="content_desc_back">Назад</string>
     <string name="connected_to_title">Підключено до:</string>
     <string name="bms_networks_title">Доступні Wi-Fi мережі від BMS:</string>
-    <string name="example_ssid">Приклад SSID</string>
+    <string name="network_info_title">Інформаці про цю мережу</string>
+    <string name="example_ssid">Значення Ssid</string>
+    <string name="example_bssid">Значення BSsid</string>
 
     <string name="invalid_packet_length">Недійсна довжина пакета.</string>
     <string name="invalid_checksum">Недійсна контрольна сума.</string>
@@ -83,10 +88,13 @@
     <string name="filter_reset_toast">Фільтр скинуто до:      \nЗаст.=\'%1$b\' Val=\'%2$s\'</string>
     <string name="reset_bms_wifi_map_text">Видалення всіх WiFi BMS із пам\'яті </string>
     <string name="add_bms_entry_text">Додати мережу BMS</string>
+    <string name="updated_bms_entry_text">Редагувати мережу BMS</string>
     <string name="dialog_add_bms_entry_title">Додати нову мережу BMS</string>
+    <string name="dialog_updated_bms_entry_title">Ононвлення мережі BMS</string>
     <string name="ssid_input_hint">SSID</string>
     <string name="bssid_input_hint">BSSID (MAC-адреса)</string>
     <string name="entry_added_toast">Мережу %1$s додано.</string>
+    <string name="entry_updated_toast">Мережу %1$s оновлено.</string>
     <string name="delete_bms_entry_text">Видалити мережу BMS</string>
     <string name="dialog_enter_ssid_title">Введіть SSID для видалення</string>
     <string name="entry_deleted_toast">Запис для %1$s видалено.</string>
