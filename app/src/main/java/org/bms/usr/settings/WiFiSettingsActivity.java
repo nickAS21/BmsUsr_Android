@@ -446,25 +446,31 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiListA
 
     @Override
     public void onInfoClick(WifiNetwork network) {
-        // This method handles clicks on the info icon.
-        // Your logic for getting network info goes here.
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        if (wifiInfo != null && network.getBSsid().equals(wifiInfo.getBSSID())) {
-            showNetworkInfoDialog(wifiInfo);
-        } else {
-            Toast.makeText(this, "Network information is only available for the connected network.", Toast.LENGTH_SHORT).show();
+        @SuppressLint("MissingPermission") List<ScanResult> results = wifiManager.getScanResults();
+        for (ScanResult result : results) {
+            if (network.getSsid().equals(result.SSID) &&
+                    network.getBSsid().equals(result.BSSID)) {
+                // показати детальну інфу по ScanResult
+                showNetworkInfoDialog(result);
+                return;
+            }
         }
+
+        Toast.makeText(this,
+                "Детальна інформація недоступна для цієї мережі.",
+                Toast.LENGTH_SHORT).show();
     }
 
-    private void showNetworkInfoDialog(WifiInfo wifiInfo) {
-        // Get DHCP information for network details
-        DhcpInfo dhcpInfo = wifiManager.getDhcpInfo();
+    private void showNetworkInfoDialog(ScanResult result) {
+        String security = getSecurityType(result.capabilities);
 
-        String info = "SSID: " + wifiInfo.getSSID() +
-                "\nBSSID: " + wifiInfo.getBSSID() +
-                "\nIP Address: " + intToIp(dhcpInfo.ipAddress) +
-                "\nGateway: " + intToIp(dhcpInfo.gateway) +
-                "\nDNS1: " + intToIp(dhcpInfo.dns1);
+        String info = "SSID: " + result.SSID +
+                "\nBSSID: " + result.BSSID +
+                "\nFrequency: " + result.frequency + " MHz" +
+                "\nSignal level: " + WifiManager.calculateSignalLevel(result.level, 5) + " / 4" +
+                "\nRSSI: " + result.level + " dBm" +
+                "\nCapabilities: " + result.capabilities +
+                "\nSecurity: " + security;
 
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.network_info_title))
@@ -473,7 +479,17 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiListA
                 .show();
     }
 
-    // A helper method to convert integer IP address to string format
+    // Витягнути тип безпеки з capabilities
+    private String getSecurityType(String caps) {
+        if (caps.contains("WEP")) return "WEP";
+        if (caps.contains("WPA3")) return "WPA3";
+        if (caps.contains("WPA2")) return "WPA2";
+        if (caps.contains("WPA")) return "WPA";
+        return "Open";
+    }
+
+
+    // Конвертація int → IP
     public String intToIp(int ipAddress) {
         return String.format(Locale.ROOT, "%d.%d.%d.%d",
                 (ipAddress & 0xff),
@@ -481,5 +497,4 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiListA
                 (ipAddress >> 16 & 0xff),
                 (ipAddress >> 24 & 0xff));
     }
-
 }

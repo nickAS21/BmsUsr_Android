@@ -151,8 +151,8 @@ public class WifiListAdapter extends RecyclerView.Adapter<WifiListAdapter.WifiVi
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
             WifiNetwork oldNetwork = oldList.get(oldItemPosition);
             WifiNetwork newNetwork = newList.get(newItemPosition);
-            // Вважаємо однаковим елементом, якщо збігається SSID
-            return oldNetwork.getSsid().equals(newNetwork.getSsid());
+            // Унікальний ідентифікатор для точки доступу - це BSSID
+            return oldNetwork.getBSsid().equals(newNetwork.getBSsid());
         }
 
         @Override

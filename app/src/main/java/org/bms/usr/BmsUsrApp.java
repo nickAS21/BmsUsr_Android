@@ -1,5 +1,7 @@
 package org.bms.usr;
 
+import static org.bms.usr.provision.CodecBmsProvision.setContext;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,6 +19,8 @@ public class BmsUsrApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        setContext(this);
 
         // Get and hold the SharedPreferences object for the app lifetime
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);

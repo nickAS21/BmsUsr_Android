@@ -97,6 +97,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     private ActivityResultLauncher<Intent> wifiSettingsLauncher;
     private boolean returningFromWifiSettings = false;
     private boolean returningFromLocationSettings = false;
+    private boolean returningFromProvision = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,11 +150,6 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                     }
                 }
         );
-
-        // ensure receiver registered before any first scan (avoids race)
-        if (!isReceiverRegistered) {
-            checkWiFiPermissions();
-        }
 
         wifiProvisionLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -214,6 +210,18 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     protected void onResume() {
         super.onResume();
 
+        // 🔹 Гарантовано реєструємо ресівер тут
+        if (!isReceiverRegistered) {
+            registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+            isReceiverRegistered = true;
+        }
+
+        if (returningFromProvision) {
+            returningFromProvision = false;
+            restartWifiScan();   // 🔹 один раз перезапускаємо
+            return;
+        }
+
         if (returningFromWifiSettings) {
             returningFromWifiSettings = false;
             if (wifiManager.isWifiEnabled()) {
@@ -234,10 +242,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
             return;
         }
 
-        if (!isReceiverRegistered) {
-            checkWiFiPermissions();
-            restartWifiScan();
-        } else if (pendingChosenSsid != null) {
+        if (pendingChosenSsid != null) {
             // check if the connection to the selected network was successful
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             if (wifiInfo != null) {
@@ -250,6 +255,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                         intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                         intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                         wifiProvisionLauncher.launch(intent);
+                        returningFromProvision = true;
                         pendingChosenSsid = null;
                     } else {
                         Toast.makeText(this, getString(R.string.connection_to_failed, pendingChosenSsid), Toast.LENGTH_SHORT).show();
@@ -265,6 +271,12 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     @Override
     protected void onPause() {
         super.onPause();
+
+        // 🔹 Відписуємо ресівер, щоб не дублювався
+        if (isReceiverRegistered) {
+            unregisterReceiver(wifiScanReceiver);
+            isReceiverRegistered = false;
+        }
 
         if (networkCallback != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback);
@@ -285,8 +297,13 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // If necessary, you can close sockets or other resources here
+        // 🔹 На випадок, якщо ресівер ще підписаний
+        if (isReceiverRegistered) {
+            unregisterReceiver(wifiScanReceiver);
+            isReceiverRegistered = false;
+        }
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -312,6 +329,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
             intent.putExtra(CHOSEN_BSSID_TEXT, network.getBSsid());
             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
             wifiProvisionLauncher.launch(intent);
+            returningFromProvision = true;
             pendingChosenSsid = null;
         } else {
             // Selected a new network -> save and wait for connection confirmation
@@ -330,7 +348,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
             progressBar.setVisibility(View.GONE);
             handler.removeCallbacksAndMessages(null);
             if (results != null && !results.isEmpty()) {
-                updateWifiList(results);
+                updateWifiList(results, true);
             } else {
                 boolean extra = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, true);
                 if (!extra || results == null || results.isEmpty()) {
@@ -342,7 +360,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                         Toast.makeText(WiFiSearchActivity.this, getString(R.string.scan_failed), Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    updateWifiList(results);
+                    updateWifiList(results, true);
                 }
             }
         }
@@ -367,9 +385,12 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
     }
 
     private void restartWifiScan() {
+        handler.removeCallbacksAndMessages(null); // скидаємо попередні таймери
+        scanRetryCount = 0;
+        isScanCompleted = false;
+        progressBar.setVisibility(View.VISIBLE);
         startWifiScan();
     }
-
     /**
      * For tests
      * String hexData = "FF016C811B31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A513030333334313030323032383400640D0A6c6562656400640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100640D0A31343133413037534C444F504730303930303100600D0A4B6F766C617232472D31002C0D0A002A0D0A4D696B726F54696B2D39353733424200220D0A6e657469735F322E34475F43424433454300180D0A4761726275686100170D0A54656E64615F7769666900180D0A4B76313800140D0A00140D0A4A61636B000F0D0A000D0D0A456C697A6162657468000D0D0A70617061000D0D0A000D0D0A4D696B726F54696B2D364135444638000D0D0A486F6D652057692D4669000D0D0A54502D4C696E6B5F32454142000A0D0A4D6164726964000A0D0A3232316100050D0A3931316200050D0A464946492D5749464900020D0AA8";
@@ -399,24 +420,20 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
 
         progressBar.setVisibility(View.VISIBLE);
         isScanCompleted = false;
-        scanRetryCount = 0;
 
-        // 1) showing result scan
+        // 1) показати кешовані результати без toast
         @SuppressLint("MissingPermission") List<ScanResult> cachedResults = wifiManager.getScanResults();
         if (cachedResults != null && !cachedResults.isEmpty()) {
-            updateWifiList(cachedResults);
-            progressBar.setVisibility(View.GONE); // cash showing → progressBar is closing
+            updateWifiList(cachedResults, false); // false = не показувати toast
         }
 
-        // 2) start a real scan
-        handler.postDelayed(() -> {
-            boolean started = wifiManager.startScan();
-            if (!started) {
-                scheduleRetry();
-            } else {
-                scheduleEmptyCheck();
-            }
-        }, 1500);
+        // 2) запустити реальний скан
+        boolean started = wifiManager.startScan();
+        if (!started) {
+            scheduleRetry();
+        } else {
+            scheduleEmptyCheck();
+        }
     }
 
 
@@ -462,6 +479,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                             intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                             wifiProvisionLauncher.launch(intent);
+                            returningFromProvision = true;
                             pendingChosenSsid = null;
                             connectivityManager.unregisterNetworkCallback(this);
                         }
@@ -548,6 +566,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                             intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
                             intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
                             wifiProvisionLauncher.launch(intent);
+                            returningFromProvision = true;
                             pendingChosenSsid = null;
                             if (networkCallback != null) {
                                 connectivityManager.unregisterNetworkCallback(networkCallback);
@@ -569,15 +588,10 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         };
         connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
     }
-    private void updateWifiList(List<ScanResult> scanResults) {
+    private void updateWifiList(List<ScanResult> scanResults, boolean showToast) {
         List<WifiNetwork> wifiNetworks = new ArrayList<>();
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
         String currentSsid = (wifiInfo != null) ? wifiInfo.getSSID().replace("\"", "") : null;
-
-        if (currentSsid != null && currentSsid.startsWith("\"") && currentSsid.endsWith("\"")) {
-            currentSsid = currentSsid.substring(1, currentSsid.length() - 1);
-        }
 
         if (currentSsidStart == null) {
             currentSsidStart = currentSsid;
@@ -585,14 +599,13 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
 
         HashMap<String, ScanResult> uniqueNetworks = new HashMap<>();
         for (ScanResult scanResult : scanResults) {
-            // Apply filter only if it's enabled and the network is NOT the currently connected one
-            if (isFilterEnabled && !scanResult.SSID.equals(currentSsid) && !scanResult.SSID.toLowerCase().startsWith(wifiFilterSsid.toLowerCase())) {
+            if (isFilterEnabled && !scanResult.SSID.equals(currentSsid)
+                    && !scanResult.SSID.toLowerCase().startsWith(wifiFilterSsid.toLowerCase())) {
                 continue;
             }
-
-            String key = scanResult.SSID != null && !scanResult.SSID.isEmpty() ? scanResult.SSID : scanResult.BSSID != null && !scanResult.BSSID.isEmpty() ? scanResult.BSSID : "Unknown network";
+            String key = !scanResult.SSID.isEmpty() ? scanResult.SSID : scanResult.BSSID;
             if (uniqueNetworks.containsKey(key)) {
-                if (Objects.requireNonNull(uniqueNetworks.get(key)).level < scanResult.level) {
+                if (uniqueNetworks.get(key).level < scanResult.level) {
                     uniqueNetworks.put(key, scanResult);
                 }
             } else {
@@ -601,33 +614,36 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         }
 
         for (Map.Entry<String, ScanResult> entry : uniqueNetworks.entrySet()) {
-            String key = entry.getKey();
-            ScanResult scanResult = entry.getValue();
-            boolean secured = scanResult.capabilities.contains("WEP")
-                    || scanResult.capabilities.contains("WPA")
-                    || scanResult.capabilities.contains("WPA2")
-                    || scanResult.capabilities.contains("WPA3");
-            wifiNetworks.add(new WifiNetwork(key, scanResult.BSSID, scanResult.level, key.equals(currentSsid), key.equals(currentSsidStart), secured));
-        }
-        if (wifiNetworks.size() > 1) {
-            wifiNetworks.sort((a, b) -> Boolean.compare(b.isCurrent(), a.isCurrent()));
+            ScanResult sr = entry.getValue();
+            boolean secured = sr.capabilities.contains("WEP")
+                    || sr.capabilities.contains("WPA")
+                    || sr.capabilities.contains("WPA2")
+                    || sr.capabilities.contains("WPA3");
+            wifiNetworks.add(new WifiNetwork(entry.getKey(), sr.BSSID, sr.level,
+                    entry.getKey().equals(currentSsid),
+                    entry.getKey().equals(currentSsidStart),
+                    secured));
         }
 
         adapter.setWifiNetworks(wifiNetworks);
-        Toast.makeText(this, getString(R.string.scan_completed), Toast.LENGTH_SHORT).show();
+
+        if (showToast) {
+            Toast.makeText(this, getString(R.string.scan_completed), Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     private void scheduleRetry() {
         if (scanRetryCount < MAX_SCAN_RETRIES) {
             scanRetryCount++;
             handler.postDelayed(() -> {
                 boolean started = wifiManager.startScan();
-                if (!started && scanRetryCount < MAX_SCAN_RETRIES) {
+                if (!started) {
                     scheduleRetry();
                 } else {
                     scheduleEmptyCheck();
                 }
-            }, RETRY_DELAY_MS * scanRetryCount);
+            }, RETRY_DELAY_MS);
         } else {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, getString(R.string.cannot_start_wifi_scan), Toast.LENGTH_SHORT).show();
@@ -691,6 +707,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                 if (currentSsidStart == null) {
                     currentSsidStart = returnedSsid;
                 }
+                returningFromProvision = true;
             }
         }
     }

@@ -10,8 +10,8 @@ android {
         applicationId "org.bms.usr"
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName "1.4 beta 22.09.2025"
+        versionCode 15
+        versionName "1.5 beta 23.09.2025"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
