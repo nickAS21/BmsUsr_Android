@@ -49,10 +49,16 @@
 
     <string name="content_desc_back">Back</string>
     <string name="connected_to_title">Connected to:</string>
+    <string name="connection_id_hint" translatable="false">Id</string>
     <string name="bms_networks_title">Available Wi-Fi networks from BMS:</string>
     <string name="network_info_title">About this network</string>
+    <string name="example_id" translatable="false">Values ID</string>
     <string name="example_ssid">Values SSID</string>
     <string name="example_bssid">Values BSsid</string>
+    <string name="example_bssid_bms" translatable="false">Values Ssid Bms</string>
+    <string name="example_ip_wifi_home" translatable="false">Values Ip WiFi Home: [192.168.8.100 + id]</string>
+    <string name="example_port_sta" translatable="false">Values Port STA Server Socket B: [18890 + id]</string>
+    <string name="example_oui" translatable="false">Values Vendor</string>
 
     <string name="invalid_packet_length">Invalid packet length.</string>
     <string name="invalid_checksum">Invalid checksum.</string>
@@ -98,8 +104,12 @@
     <string name="updated_bms_entry_text">Edit BMS Network</string>
     <string name="dialog_add_bms_entry_title">Add New BMS Network</string>
     <string name="dialog_updated_bms_entry_title">Updated BMS Network</string>
-    <string name="ssid_input_hint">SSID</string>
+    <string name="id_input_hint" translatable="false">ID</string>
+    <string name="ssid_input_hint" translatable="false">SSID WIFI</string>
+    <string name="ssid_bms_input_hint" translatable="false">SSID BMS</string>
     <string name="bssid_input_hint">BSSID (MAC Address)</string>
+    <string name="ip_sta_wifi_home_input_hint" translatable="false">IP (STA mode WiFi Home)</string>
+    <string name="port_sta_input_hint" translatable="false">PORT (STA mode Server Socket B settings: 18890 + id)</string>
     <string name="entry_added_toast">Network %1$s added.</string>
     <string name="entry_updated_toast">Network %1$s updated.</string>
     <string name="delete_bms_entry_text">Delete BMS Network</string>

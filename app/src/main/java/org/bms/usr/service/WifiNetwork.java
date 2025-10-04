@@ -3,17 +3,22 @@ package org.bms.usr.service;
 public class WifiNetwork {
     private String ssid;
     private String bssid;
+    private String ip;
+    private int port;
     private int signalLevel;
     private boolean isCurrent;
     private boolean isCurrentSsidStart;
     private boolean secured;
 
+
     public WifiNetwork() {
     }
 
-    public WifiNetwork(String ssid, String bssid, int signalLevel, boolean isCurrent, boolean isCurrentStart, boolean secured) {
+    public WifiNetwork(String ssid, String bssid, String ip, int port, int signalLevel, boolean isCurrent, boolean isCurrentStart, boolean secured) {
         this.ssid = ssid;
         this.bssid = bssid;
+        this.ip = ip;
+        this.port = port;
         this.signalLevel = signalLevel;
         this.isCurrent = isCurrent;
         this.isCurrentSsidStart = isCurrentStart;
@@ -29,6 +34,18 @@ public class WifiNetwork {
 
     public String getBSsid() {
         return this.bssid;
+    }
+    public String getIp() {
+        return this.ip;
+    }
+    public int getPort() {
+        return this.port;
+    }
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public int getSignalLevel() {

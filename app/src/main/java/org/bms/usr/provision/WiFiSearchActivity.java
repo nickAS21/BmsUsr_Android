@@ -2,11 +2,13 @@ package org.bms.usr.provision;
 
 import static org.bms.usr.BmsUsrApp.getWifiManager;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
+import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_IP_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_ENABLED_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_SSID_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.getWifiFilterSsid;
+import static org.bms.usr.provision.HelperBmsProvision.intToIp;
 import static org.bms.usr.provision.HelperBmsProvision.isFilterEnabled;
 import static org.bms.usr.provision.HelperBmsProvision.saveFilterSettings;
 
@@ -113,7 +115,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         RecyclerView recyclerView = findViewById(R.id.recyclerViewWifiList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 //        wifiNetworks = new ArrayList<>();
-        adapter = new WifiListAdapter( this, this, null);
+        adapter = new WifiListAdapter( this, this, null, false);
         recyclerView.setAdapter(adapter);
 
         ImageButton buttonBack = findViewById(R.id.buttonBack);
@@ -244,17 +246,13 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
 
         if (pendingChosenSsid != null) {
             // check if the connection to the selected network was successful
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-            if (wifiInfo != null) {
-                String currentSsid = wifiInfo.getSSID();
+            WifiInfo currentWifiInfo = wifiManager.getConnectionInfo();
+            if (currentWifiInfo != null) {
+                String currentSsid = currentWifiInfo.getSSID();
                 if (currentSsid != null && currentSsid.length() > 2) {
                     currentSsid = currentSsid.replace("\"", "");
                     if (pendingChosenSsid.equals(currentSsid)) {
-                        Intent intent = new Intent(this, WiFiProvisionActivity.class);
-                        intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
-                        intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
-                        intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-                        wifiProvisionLauncher.launch(intent);
+                        wifiProvisionLauncher.launch(getIntentProvision(pendingChosenSsid, currentWifiInfo));
                         returningFromProvision = true;
                         pendingChosenSsid = null;
                     } else {
@@ -323,12 +321,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         String currentSsid = (currentWifiInfo != null) ? currentWifiInfo.getSSID().replace("\"", "") : null;
         pendingChosenSsid = network.getSsid();
         if (pendingChosenSsid.equals(currentSsid)) {
-            // Selected the same network -> go directly to WiFiProvisionActivity
-            Intent intent = new Intent(this, WiFiProvisionActivity.class);
-            intent.putExtra(CHOSEN_SSID_TEXT, pendingChosenSsid);
-            intent.putExtra(CHOSEN_BSSID_TEXT, network.getBSsid());
-            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-            wifiProvisionLauncher.launch(intent);
+            wifiProvisionLauncher.launch(getIntentProvision(pendingChosenSsid, currentWifiInfo));
             returningFromProvision = true;
             pendingChosenSsid = null;
         } else {
@@ -469,16 +462,11 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                 super.onAvailable(network);
                 if (pendingChosenSsid != null) {
                     runOnUiThread(() -> {
-                        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                        String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
+                        WifiInfo currentWifiInfo = wifiManager.getConnectionInfo();
+                        String connectedSsid = currentWifiInfo != null ? currentWifiInfo.getSSID().replace("\"", "") : null;
                         if (pendingChosenSsid.equals(connectedSsid)) {
                             Toast.makeText(WiFiSearchActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
-
-                            Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
-                            intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
-                            intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
-                            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-                            wifiProvisionLauncher.launch(intent);
+                            wifiProvisionLauncher.launch(getIntentProvision (connectedSsid, currentWifiInfo));
                             returningFromProvision = true;
                             pendingChosenSsid = null;
                             connectivityManager.unregisterNetworkCallback(this);
@@ -555,17 +543,12 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
             public void onAvailable(@NonNull Network network) {
                 super.onAvailable(network);
                 if (pendingChosenSsid != null) {
-                    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                    String connectedSsid = wifiInfo != null ? wifiInfo.getSSID().replace("\"", "") : null;
+                    WifiInfo currentWifiInfo = wifiManager.getConnectionInfo();
+                    String connectedSsid = currentWifiInfo != null ? currentWifiInfo.getSSID().replace("\"", "") : null;
                     if (pendingChosenSsid.equals(connectedSsid)) {
                         runOnUiThread(() -> {
                             Toast.makeText(WiFiSearchActivity.this, getString(R.string.connected_to, connectedSsid), Toast.LENGTH_SHORT).show();
-
-                            Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
-                            intent.putExtra(CHOSEN_SSID_TEXT, connectedSsid);
-                            intent.putExtra(CHOSEN_BSSID_TEXT, wifiInfo.getBSSID());
-                            intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
-                            wifiProvisionLauncher.launch(intent);
+                            wifiProvisionLauncher.launch(getIntentProvision(connectedSsid, currentWifiInfo));
                             returningFromProvision = true;
                             pendingChosenSsid = null;
                             if (networkCallback != null) {
@@ -619,7 +602,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
                     || sr.capabilities.contains("WPA")
                     || sr.capabilities.contains("WPA2")
                     || sr.capabilities.contains("WPA3");
-            wifiNetworks.add(new WifiNetwork(entry.getKey(), sr.BSSID, sr.level,
+            wifiNetworks.add(new WifiNetwork(entry.getKey(), sr.BSSID, sr.BSSID, sr.level, sr.level,
                     entry.getKey().equals(currentSsid),
                     entry.getKey().equals(currentSsidStart),
                     secured));
@@ -729,6 +712,15 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         returningFromLocationSettings = true;
         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
+    }
+
+    private Intent getIntentProvision(String chosenSsid, WifiInfo currentWifiInfo) {
+        Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
+        intent.putExtra(CHOSEN_SSID_TEXT, chosenSsid);
+        intent.putExtra(CHOSEN_BSSID_TEXT, currentWifiInfo.getBSSID());
+        intent.putExtra(CHOSEN_IP_TEXT, intToIp(currentWifiInfo.getIpAddress()));
+        intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
+        return intent;
     }
 
 }

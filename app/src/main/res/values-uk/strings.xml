@@ -90,8 +90,7 @@
     <string name="add_bms_entry_text">Додати мережу BMS</string>
     <string name="updated_bms_entry_text">Редагувати мережу BMS</string>
     <string name="dialog_add_bms_entry_title">Додати нову мережу BMS</string>
-    <string name="dialog_updated_bms_entry_title">Ононвлення мережі BMS</string>
-    <string name="ssid_input_hint">SSID</string>
+    <string name="dialog_updated_bms_entry_title">Оновлення мережі BMS</string>
     <string name="bssid_input_hint">BSSID (MAC-адреса)</string>
     <string name="entry_added_toast">Мережу %1$s додано.</string>
     <string name="entry_updated_toast">Мережу %1$s оновлено.</string>

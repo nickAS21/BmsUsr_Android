@@ -37,14 +37,32 @@
 
     <TextView
         android:id="@+id/textViewConnectedToSsid"
-        android:textStyle="bold"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:singleLine="true"
         app:layout_constraintStart_toEndOf="@id/textViewConnectedToTitle"
         app:layout_constraintTop_toTopOf="@id/textViewConnectedToTitle" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/idInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewConnectedToTitle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textViewConnectedToId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/id_input_hint"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/ssidInputLayout"
@@ -52,12 +70,14 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp"  app:layout_constraintTop_toBottomOf="@id/textViewConnectedToTitle">
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/idInputLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextSsid"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:hint="@string/ssid_hint"
+            android:layout_height="wrap_content"
+            android:hint="@string/ssid_hint"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -66,7 +86,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:endIconMode="password_toggle"
-        android:layout_marginTop="16dp"  app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ssidInputLayout">
 

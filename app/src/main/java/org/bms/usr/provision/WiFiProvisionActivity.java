@@ -5,8 +5,11 @@ import static org.bms.usr.provision.BmsCommandType.CMD_UPDATE_SETTINGS;
 import static org.bms.usr.provision.CodecBmsProvision.decodeResponse;
 import static org.bms.usr.provision.CodecBmsProvision.getCommand;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
+import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_ID_TEXT;
+import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_IP_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
+import static org.bms.usr.settings.HelperBmsSettings.PORT_DEF_AP_BASE;
 import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
 
 import androidx.activity.OnBackPressedCallback;
@@ -37,22 +40,23 @@ import org.bms.usr.transport.WiFiBmsListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class WiFiProvisionActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
-
+    private EditText editTextId;
     private EditText editTextSsid;
     private EditText editTextPassword;
     private Button buttonOk;
 
     private WifiListAdapter bmsNetworksAdapter;
-//    private List<WifiNetwork> bmsNetworksList;
     private UdpClient udpClient;
 
     private ProgressBar progressBar;
 
     private String currentSsidStart;
     private String connectedSsid;
+    private String connectedToId;
     private String connectedBSsid;
 
     @Override
@@ -61,6 +65,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         setContentView(R.layout.activity_wifi_provision);
 
         TextView textViewConnectedTo = findViewById(R.id.textViewConnectedToSsid);
+        editTextId = findViewById(R.id.textViewConnectedToId);
         editTextSsid = findViewById(R.id.editTextSsid);
         editTextPassword = findViewById(R.id.editTextPassword);
 
@@ -88,13 +93,15 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         RecyclerView recyclerViewBmsNetworks = findViewById(R.id.recyclerViewBmsNetworks);
         recyclerViewBmsNetworks.setLayoutManager(new LinearLayoutManager(this));
         progressBar = findViewById(R.id.progressBar);
-        bmsNetworksAdapter = new WifiListAdapter(this, this, null);
+        bmsNetworksAdapter = new WifiListAdapter(this, this, null, false);
         recyclerViewBmsNetworks.setAdapter(bmsNetworksAdapter);
 
         connectedSsid = getIntent().getStringExtra(CHOSEN_SSID_TEXT);
         connectedBSsid = getIntent().getStringExtra(CHOSEN_BSSID_TEXT);
         currentSsidStart = getIntent().getStringExtra(CURRENT_SSID_START_TEXT);
+        connectedToId = null;
         textViewConnectedTo.setText(connectedSsid);
+        editTextId.setText(connectedToId);
 
         // Add TextWatcher to both input fields
         TextWatcher textWatcher = new TextWatcher() {
@@ -108,12 +115,15 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             public void afterTextChanged(Editable s) {
                 // Check if both fields are not empty
                 boolean isReady = !editTextSsid.getText().toString().isEmpty() &&
-                        !editTextPassword.getText().toString().isEmpty();
+                        !editTextPassword.getText().toString().isEmpty()&&
+                        !editTextId.getText().toString().isEmpty();
                 // Activate/deactivate the OK button based on the check
                 buttonOk.setEnabled(isReady);
+                connectedToId = editTextId.getText().toString();
             }
         };
 
+        editTextId.addTextChangedListener(textWatcher);
         editTextSsid.addTextChangedListener(textWatcher);
         editTextPassword.addTextChangedListener(textWatcher);
 
@@ -182,7 +192,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             case RSP_UPDATE_SETTINGS: // configuration saved result ok
                 Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
                 // === UPDATE MAP IN SHARED PREFERENCES ===
-                addOrUpdateBmsWifiEntry(connectedSsid, connectedBSsid);
+                addOrUpdateBmsWifiEntry(Integer.parseInt(connectedToId), connectedSsid, null,  connectedBSsid);
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());

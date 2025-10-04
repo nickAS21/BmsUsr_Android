@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Деталі WiFi BMS Entity"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="ID (Number):" />
+            <TextView android:id="@+id/detail_id" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="SSID WiFi BMS:" />
+            <TextView android:id="@+id/detail_ssid" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="SSID BMS:" />
+            <TextView android:id="@+id/detail_ssid_bms" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="BSSID (MAC):" />
+            <TextView android:id="@+id/detail_bssid" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="IP WiFi Home:" />
+            <TextView android:id="@+id/detail_ip_wifi_home" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="IP AP (Сервер):" />
+            <TextView android:id="@+id/detail_ip_ap" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="Port AP:" />
+            <TextView android:id="@+id/detail_port_ap" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="IP STA (Socket):" />
+            <TextView android:id="@+id/detail_ip_sta" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="Port STA:" />
+            <TextView android:id="@+id/detail_port_sta" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/DetailRowStyle">
+            <TextView style="@style/DetailLabelStyle"
+                android:text="Vendor (OUI):" />
+            <TextView android:id="@+id/detail_oui" style="@style/DetailValueStyle" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

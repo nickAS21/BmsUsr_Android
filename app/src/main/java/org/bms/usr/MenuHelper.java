@@ -31,4 +31,21 @@ public class MenuHelper {
             menu.findItem(R.id.action_delete_bms_entry).setVisible(true);
         }
     }
+
+    // Find icon by Wi-Fi level
+     public static int getWifiSignalIcon(int signalLevel, boolean secured) {
+        int icon;
+        if (signalLevel >= -67) { // Full level
+            icon = secured ? R.drawable.ic_wifi_signal_4_lock : R.drawable.ic_wifi_signal_4;
+        } else if (signalLevel >= -70) {
+            icon = secured ? R.drawable.ic_wifi_signal_3_lock : R.drawable.ic_wifi_signal_3;
+        } else if (signalLevel >= -80) {
+            icon = secured ? R.drawable.ic_wifi_signal_2_lock : R.drawable.ic_wifi_signal_2;
+        } else if (signalLevel > -90) {
+            icon = secured ? R.drawable.ic_wifi_signal_1_lock : R.drawable.ic_wifi_signal_1;
+        } else {
+            icon = secured ? R.drawable.ic_wifi_signal_0_lock : R.drawable.ic_wifi_signal_0;
+        }
+        return icon;
+    }
 }
