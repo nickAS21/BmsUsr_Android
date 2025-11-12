@@ -18,8 +18,6 @@ public class HelperBmsProvision {
     public static final String CURRENT_SSID_START_TEXT = "CURRENT_SSID_START";
     public static final String CHOSEN_SSID_TEXT = "CHOSEN_SSID";
     public static final String CHOSEN_BSSID_TEXT = "CHOSEN_BSSID";
-    public static final String CHOSEN_ID_TEXT = "CHOSEN_ID";
-    public static final String CHOSEN_IP_TEXT = "CHOSEN_IP";
     public static final String WIFI_FILTER_SSID_DEF = "USR-WIFI232-";
     public static final boolean WIFI_FILTER_ENABLED_DEF = true;
     private static final String KEY_WIFI_FILTER = "wifiFilterSsid";

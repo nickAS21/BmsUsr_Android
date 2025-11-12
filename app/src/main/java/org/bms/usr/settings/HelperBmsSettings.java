@@ -12,11 +12,13 @@ import java.util.Map;
 public class HelperBmsSettings {
 
     private static final String KEY_BMS_WIFI_MAP = "bmsWifiMap";
-    public static final String IP_DEF_STA_PREFIX = "10.10.";        // 10.10.100+id.100
-    public static final String IP_DEF_AP = "192.168.8.119";         // PC, AWS. other
+    public static final String IP_DEF_STA_PREFIX = "10.10.100.100";        // 10.10.100+id.100
+    public static final String IP_DEF_AP = "192.168.8.119";         // IP PC, AWS. other -> // куди BMS підключається у AP-режимі Client (твій ноут / AWS)
     public static final String IP_DEF_WIFI_HOME_PREFIX = "192.168.8.";  // 92.168.8.100+id
     public static final int PORT_DEF_AP_BASE = 8890;               // +id
     public static final int PORT_DEF_STA_BASE = 18890;                   // +id
+    public static final int BAUTRATE_DEF_STA = 56700;                   // +id
+    public static final int DATA_BITS_DEF_STA = 8;                   // +id
 
     public static Map<String, WiFiBmsEntity> getBmsWifiMap() {
         Gson gson = new Gson();
@@ -33,9 +35,9 @@ public class HelperBmsSettings {
      * Example:
      * StarlinkDachaWifi -> 3e:90:1f:56:1d:28 -> IPv4: 192.168.1.51
      */
-    public static void addOrUpdateBmsWifiEntry(int id, String ssid, String ssidBms, String bssid) {
+    public static void addOrUpdateBmsWifiEntry(int id, String ipAp, String ssid, String ssidBms, String bssid) {
         Map<String, WiFiBmsEntity> map = getBmsWifiMap();
-        map.put(bssid, new WiFiBmsEntity(id, ssid, ssidBms, bssid));
+        map.put(bssid, new WiFiBmsEntity(id, ipAp, ssid, ssidBms, bssid));
         saveBmsWifiMap(map);
     }
 
@@ -57,7 +59,4 @@ public class HelperBmsSettings {
         String json = gson.toJson(map);
         getSharedPreferences().edit().putString(KEY_BMS_WIFI_MAP, json).apply();
     }
-
-
-
 }

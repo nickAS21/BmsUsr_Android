@@ -130,6 +130,10 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         inputId.setHint(R.string.id_input_hint);
         linearLayout.addView(inputId);
 
+        final EditText inputIpAp = new EditText(this);
+        inputIpAp.setHint(R.string.ip_ap_input_hint);
+        linearLayout.addView(inputIpAp);
+
         final EditText inputSsid = new EditText(this);
         inputSsid.setHint(R.string.ssid_input_hint);
         linearLayout.addView(inputSsid);
@@ -170,6 +174,7 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                 if (position > 0) {
                     WiFiBmsEntity selectedNetwork = availableNetworks.get(position - 1);
                     inputId.setText(selectedNetwork.id());
+                    inputIpAp.setText(selectedNetwork.ipAp());
                     inputSsid.setText(selectedNetwork.ssid());
                     inputSsidBms.setText(selectedNetwork.ssidBms());
                     inputBssid.setText(selectedNetwork.bssid());
@@ -192,11 +197,12 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
             Button okButton = parentDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             okButton.setOnClickListener(v -> {
                 int newId = Integer.parseInt(String.valueOf(inputId.getText()));
+                String newIpAp = inputIpAp.getText().toString().trim();
                 String newSsid = inputSsid.getText().toString().trim();
                 String newSsidBms = inputSsidBms.getText().toString().trim();
                 String newBssid = inputBssid.getText().toString().trim();
 
-                if (newId != 0 && !newSsid.isEmpty() && !newBssid.isEmpty()) {
+                if (newId != 0 && !newIpAp.isEmpty() && !newSsid.isEmpty() && !newBssid.isEmpty()) {
                     Map<String, WiFiBmsEntity> bmsWifiMap = getBmsWifiMap();
 
                     // Перевірка на дублікати
@@ -230,14 +236,14 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                                     if (originalSsidToAdd[0] != null) {
                                         removeBmsWifiEntry(originalSsidToAdd[0]);
                                     }
-                                    addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid);
+                                    addOrUpdateBmsWifiEntry(newId, newIpAp, newSsid, newSsidBms,  newBssid);
                                     Toast.makeText(this, getString(R.string.entry_updated_toast, newSsid), Toast.LENGTH_SHORT).show();
                                     loadBmsNetworks();
                                 }
                         );
 
                     } else {
-                        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid);
+                        addOrUpdateBmsWifiEntry(newId, newIpAp, newSsid, newSsidBms,  newBssid);
                         Toast.makeText(this, getString(R.string.entry_added_toast, newSsid), Toast.LENGTH_SHORT).show();
                         loadBmsNetworks();
                         parentDialog.dismiss();
@@ -265,6 +271,11 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         inputId.setHint(R.string.id_input_hint);
         inputId.setEnabled(false);
         linearLayout.addView(inputId);
+
+        final EditText inputIpAp = new EditText(this);
+        inputIpAp.setHint(R.string.ip_ap_input_hint);
+        inputIpAp.setEnabled(false);
+        linearLayout.addView(inputIpAp);
 
         final EditText inputSsid = new EditText(this);
         inputSsid.setHint(R.string.ssid_input_hint);
@@ -308,14 +319,16 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                     String selectedBSsid = parent.getItemAtPosition(position).toString();
                     WiFiBmsEntity values = savedNetworksMap.get(selectedBSsid);
                     originalSsidToUpdate[0] = selectedBSsid;
+                    inputId.setText(String.valueOf(values.id()));
+                    inputIpAp.setText(values.ipAp());
                     inputSsid.setText(values.ssid());
                     inputBssid.setText(selectedBSsid);
                     inputSsidBms.setText(values.ssidBms());
-                    inputId.setText(String.valueOf(values.id()));
                     inputIpSatWiFiHome.setText("http://" + values.ipWiFiHome());
                     inputPortSta.setText(String.valueOf(values.portSTA()));
 
                     inputId.setEnabled(true);
+                    inputIpAp.setEnabled(true);
                     inputSsid.setEnabled(true);
                     inputSsidBms.setEnabled(true);
                     inputBssid.setEnabled(true);
@@ -324,6 +337,7 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                 } else {
                     originalSsidToUpdate[0] = null;
                     inputId.setText("");
+                    inputIpAp.setText("");
                     inputSsid.setText("");
                     inputSsidBms.setText("");
                     inputBssid.setText("");
@@ -351,6 +365,7 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
             Button okButton = parentDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             okButton.setOnClickListener(v -> {
                 int updatedId = Integer.parseInt((inputId.getText().toString()));
+                String updatedIpAp = inputIpAp.getText().toString();
                 String updatedSsid = inputSsid.getText().toString();
                 String updatedSsidBms = inputSsidBms.getText().toString();
                 String updatedBssid = inputBssid.getText().toString();
@@ -361,11 +376,11 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                         showConflictConfirmationDialog(
                                 parentDialog,
                                 getString(R.string.dialog_duplicate_entry_message, updatedSsid),
-                                () -> performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedSsid, updatedSsidBms)
+                                () -> performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedIpAp, updatedSsid, updatedSsidBms)
                         );
 
                     } else {
-                        performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedSsid, updatedSsidBms);
+                        performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedIpAp, updatedSsid, updatedSsidBms);
                         parentDialog.dismiss();
                     }
                 }
@@ -390,9 +405,9 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
     }
 
 
-    private void performUpdate(String oldBssid, String newBssid, int newId, String newSsid, String newSsidBms) {
+    private void performUpdate(String oldBssid, String newBssid, int newId, String newIpAp, String newSsid, String newSsidBms) {
         removeBmsWifiEntry(oldBssid);
-        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms, newBssid);
+        addOrUpdateBmsWifiEntry(newId, newIpAp, newSsid, newSsidBms, newBssid);
         Toast.makeText(this, getString(R.string.entry_updated_toast, newBssid), Toast.LENGTH_SHORT).show();
         loadBmsNetworks();
     }
@@ -409,18 +424,35 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
 
         builder.setView(linearLayout);
 
-        // Get the list of saved networks from SharedPreferences
+        // Отримуємо збережені мережі
         final Map<String, WiFiBmsEntity> savedNetworksMap = getBmsWifiMap();
-        final List<String> ssidList = new ArrayList<>(savedNetworksMap.keySet());
-        ssidList.add(0, "Select a network");
+        final List<String> ssidList = new ArrayList<>();
+        ssidList.add("Select a network");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ssidList);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        for (Map.Entry<String, WiFiBmsEntity> entry : savedNetworksMap.entrySet()) {
+            WiFiBmsEntity entity = entry.getValue();
+            String displayText = String.format(
+                    "%s (ID: %s, SSID: %s)",
+                    entry.getKey(),
+                    entity.id(),      // або getBmsId(), залежно від моделі
+                    entity.ssid()
+            );
+            ssidList.add(displayText);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_small_item,  // наш кастомний макет
+                ssidList
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_small_item);
         spinnerSavedNetworks.setAdapter(adapter);
 
         builder.setPositiveButton(R.string.button_ok, (dialog, which) -> {
-            String ssidToRemove = spinnerSavedNetworks.getSelectedItem().toString();
-            if (!ssidToRemove.equals("Select a network")) {
+            int selectedPosition = spinnerSavedNetworks.getSelectedItemPosition();
+            if (selectedPosition > 0) { // пропускаємо "Select a network"
+                // Отримуємо реальний SSID (перший елемент після "Select a network" — це savedNetworksMap.keySet())
+                String ssidToRemove = new ArrayList<>(savedNetworksMap.keySet()).get(selectedPosition - 1);
                 boolean wasRemoved = removeBmsWifiEntry(ssidToRemove);
                 if (wasRemoved) {
                     Toast.makeText(this, getString(R.string.entry_deleted_toast, ssidToRemove), Toast.LENGTH_SHORT).show();
@@ -432,6 +464,7 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         builder.setNegativeButton(R.string.button_cancel, (dialog, which) -> dialog.cancel());
         builder.show();
     }
+
     // Helper method to find BSSID based on SSID from the current list
     private String findBssidBySsid(String ssid) {
         Map<String, WiFiBmsEntity> bmsWifiMap = getBmsWifiMap();
@@ -503,7 +536,7 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         ((TextView) dialogView.findViewById(R.id.detail_ssid_bms)).setText(safe(entity.ssidBms()));
         ((TextView) dialogView.findViewById(R.id.detail_bssid)).setText(safe(entity.bssid()));
         ((TextView) dialogView.findViewById(R.id.detail_ip_wifi_home)).setText(safe(entity.ipWiFiHome()));
-        ((TextView) dialogView.findViewById(R.id.detail_ip_ap)).setText(safe(entity.ipAP()));
+        ((TextView) dialogView.findViewById(R.id.detail_ip_ap)).setText(safe(entity.ipAp()));
         ((TextView) dialogView.findViewById(R.id.detail_port_ap)).setText(String.valueOf(entity.portAp()));
         ((TextView) dialogView.findViewById(R.id.detail_ip_sta)).setText(safe(entity.ipSTA()));
         ((TextView) dialogView.findViewById(R.id.detail_port_sta)).setText(String.valueOf(entity.portSTA()));

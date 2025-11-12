@@ -15,8 +15,7 @@
     <string name="wifi_bms_saved_title">WiFi BMS збережені</string>
 
     <string name="exit">Вихід</string>
-    <string name="ssid_hint">SSID (обов\'язково)</string>
-    <string name="password_hint">Пароль (обов\'язково)</string>
+    <string name="password_hint">Пароль</string>
     <string name="connected_to">Підключено до %s</string>
     <string name="connection_to_failed">Підключення до %s не виконано.</string>
     <string name="connection_to_waiting">Підключення до %s…</string>

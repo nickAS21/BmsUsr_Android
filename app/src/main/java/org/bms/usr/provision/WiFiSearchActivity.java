@@ -2,13 +2,11 @@ package org.bms.usr.provision;
 
 import static org.bms.usr.BmsUsrApp.getWifiManager;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
-import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_IP_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_ENABLED_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.WIFI_FILTER_SSID_DEF;
 import static org.bms.usr.provision.HelperBmsProvision.getWifiFilterSsid;
-import static org.bms.usr.provision.HelperBmsProvision.intToIp;
 import static org.bms.usr.provision.HelperBmsProvision.isFilterEnabled;
 import static org.bms.usr.provision.HelperBmsProvision.saveFilterSettings;
 
@@ -63,7 +61,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class WiFiSearchActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
@@ -718,7 +715,6 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
         Intent intent = new Intent(WiFiSearchActivity.this, WiFiProvisionActivity.class);
         intent.putExtra(CHOSEN_SSID_TEXT, chosenSsid);
         intent.putExtra(CHOSEN_BSSID_TEXT, currentWifiInfo.getBSSID());
-        intent.putExtra(CHOSEN_IP_TEXT, intToIp(currentWifiInfo.getIpAddress()));
         intent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
         return intent;
     }
