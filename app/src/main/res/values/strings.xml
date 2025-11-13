@@ -119,4 +119,6 @@
     <string name="entry_not_found_toast">Network %1$s was not found.</string>
     <string name="indicate_of_process" translatable="false">Indicate of process</string>
     <string name="icon_by_level" translatable="false">Icon by level</string>
+    <string name="details_entity_title">WiFi BMS Entity Details</string>
+    <string name="details_info_entity_not">Detailed information is not available for this network.</string>
 </resources>

@@ -57,11 +57,6 @@ public class WifiBmsListAdapter extends RecyclerView.Adapter<WifiBmsListAdapter.
         holder.textViewSsid.setText(network.ssid());
         holder.textViewBSsid.setText(network.bssid());
         holder.textViewSsidBms.setText(network.ssidBms());
-
-//        holder.textViewId.setText(String.valueOf(network.id()));
-//        holder.textViewIpWiFiHome.setText(network.ipWiFiHome());
-//        holder.textViewPorSta.setText(String.valueOf(network.portSTA()));
-//        holder.textViewOui.setText(network.oui());
         holder.imageViewInfo.setVisibility(infoClickListener != null ? View.VISIBLE : View.GONE);
         holder.imageViewInfo.setOnClickListener(v -> {
             if (infoClickListener != null) {
@@ -72,19 +67,8 @@ public class WifiBmsListAdapter extends RecyclerView.Adapter<WifiBmsListAdapter.
         // Find icon by secured
         int iconRes = getWifiSignalIcon(-40, true);
         holder.imageViewWifiSignal.setImageResource(iconRes);
-
-//        if (network.isCurrentSsidStart()) {
-//            holder.textViewSsid.setTypeface(null, Typeface.BOLD);
-//            holder.imageViewTick.setColorFilter(context.getColor(R.color.purple_700));
-//            holder.imageViewTick.setVisibility(View.VISIBLE);
-//        } else if (network.isCurrent()) {
-//            holder.textViewSsid.setTypeface(null, Typeface.BOLD);
-//            holder.imageViewTick.setColorFilter(context.getColor(R.color.green));
-//            holder.imageViewTick.setVisibility(View.VISIBLE);
-//        }  else {
-            holder.textViewSsid.setTypeface(null, Typeface.NORMAL);
-            holder.imageViewTick.setVisibility(View.GONE);
-//        }
+        holder.textViewSsid.setTypeface(null, Typeface.NORMAL);
+        holder.imageViewTick.setVisibility(View.GONE);
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(network));
     }

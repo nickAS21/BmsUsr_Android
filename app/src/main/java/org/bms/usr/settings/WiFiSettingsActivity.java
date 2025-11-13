@@ -507,15 +507,17 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
     public void onInfoClick(WiFiBmsEntity network) {
         @SuppressLint("MissingPermission") List<ScanResult> results = wifiManager.getScanResults();
         for (ScanResult result : results) {
-            if (result.SSID.equals(network.ssid()) || result.SSID.equals(network.ssidBms()) ||
-                    result.BSSID.equals(network.bssid())) {
+            if (
+                    (!result.SSID.isBlank() && (result.SSID.equals(network.ssid()) || result.SSID.equals(network.ssidBms()))) ||
+                    (!result.BSSID.isBlank() && result.BSSID.equals(network.bssid()))
+            ) {
                 // показати детальну інфу по ScanResult
                 showNetworkInfoDialog(result, network.ssid());
                 return;
             }
         }
         Toast.makeText(this,
-                "Детальна інформація недоступна для цієї мережі.",
+                R.string.details_info_entity_not,
                 Toast.LENGTH_SHORT).show();
     }
 

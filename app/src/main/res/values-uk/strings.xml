@@ -97,4 +97,6 @@
     <string name="dialog_enter_ssid_title">Введіть SSID для видалення</string>
     <string name="entry_deleted_toast">Запис для %1$s видалено.</string>
     <string name="entry_not_found_toast">Мережу %1$s не знайдено.</string>
+    <string name="details_entity_title">Деталі WiFi BMS Entity</string>
+    <string name="details_info_entity_not">Детальна інформація недоступна для цієї мережі.</string>
 </resources>

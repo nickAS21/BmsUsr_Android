@@ -89,6 +89,8 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
         android:contentDescription="@string/indicate_of_process"
         android:src="@drawable/set_info_circle"/>
 

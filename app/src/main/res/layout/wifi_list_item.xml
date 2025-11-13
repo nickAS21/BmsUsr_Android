@@ -50,6 +50,8 @@
         android:layout_height="24dp"
         android:layout_gravity="center_vertical"
         android:contentDescription="@string/indicate_of_process"
+        android:clickable="true"
+        android:focusable="true"
         android:src="@drawable/set_info_circle"
         android:visibility="gone"
         app:tint="@color/green" />
