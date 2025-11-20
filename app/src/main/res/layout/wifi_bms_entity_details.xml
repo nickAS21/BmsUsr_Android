@@ -33,7 +33,7 @@
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="ID (Number):"
+            android:text="@string/details_entity_label_id"
             app:layout_constraintTop_toBottomOf="@id/header_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
@@ -55,7 +55,7 @@
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="SSID WiFi BMS:"
+            android:text="@string/details_entity_label_ssid"
             app:layout_constraintTop_toBottomOf="@id/label_id"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
@@ -77,7 +77,7 @@
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="SSID BMS:"
+            android:text="@string/details_entity_label_ssid_bms"
             app:layout_constraintTop_toBottomOf="@id/label_ssid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
@@ -99,7 +99,7 @@
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="BSSID (MAC):"
+            android:text="@string/details_entity_label_bssid"
             app:layout_constraintTop_toBottomOf="@id/label_ssid_bms"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
@@ -117,112 +117,90 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/label_ip_wifi_home"
+            android:id="@+id/label_net_a_ip"
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="IP WiFi Home:"
+            android:text="@string/details_entity_label_net_a_ip"
             app:layout_constraintTop_toBottomOf="@id/label_bssid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
             android:layout_marginTop="8dp"/>
 
         <TextView
-            android:id="@+id/detail_ip_wifi_home"
+            android:id="@+id/detail_net_a_ip"
             style="@style/DetailValueStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/label_ip_wifi_home"
+            app:layout_constraintTop_toTopOf="@id/label_net_a_ip"
             app:layout_constraintStart_toEndOf="@id/guideline_split"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/label_ip_ap"
+            android:id="@+id/label_net_a_port"
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="IP AP (Сервер):"
-            app:layout_constraintTop_toBottomOf="@id/label_ip_wifi_home"
+            android:text="@string/details_entity_label_net_a_port"
+            app:layout_constraintTop_toBottomOf="@id/label_net_a_ip"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
             android:layout_marginTop="8dp"/>
 
         <TextView
-            android:id="@+id/detail_ip_ap"
+            android:id="@+id/detail_net_a_port"
             style="@style/DetailValueStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/label_ip_ap"
+            app:layout_constraintTop_toTopOf="@id/label_net_a_port"
             app:layout_constraintStart_toEndOf="@id/guideline_split"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/label_port_ap"
+            android:id="@+id/label_netb_ip"
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Port AP:"
-            app:layout_constraintTop_toBottomOf="@id/label_ip_ap"
+            android:text="@string/details_entity_label_net_b_ip"
+            app:layout_constraintTop_toBottomOf="@id/label_net_a_port"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
             android:layout_marginTop="8dp"/>
 
         <TextView
-            android:id="@+id/detail_port_ap"
+            android:id="@+id/detail_netb_ip"
             style="@style/DetailValueStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/label_port_ap"
+            app:layout_constraintTop_toTopOf="@id/label_netb_ip"
             app:layout_constraintStart_toEndOf="@id/guideline_split"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
-            android:id="@+id/label_ip_sta"
+            android:id="@+id/label_netb_port"
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="IP STA (Socket):"
-            app:layout_constraintTop_toBottomOf="@id/label_port_ap"
+            android:text="@string/details_entity_label_net_b_port"
+            app:layout_constraintTop_toBottomOf="@id/label_netb_ip"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
             android:layout_marginTop="8dp"/>
 
         <TextView
-            android:id="@+id/detail_ip_sta"
+            android:id="@+id/detail_netb_port"
             style="@style/DetailValueStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/label_ip_sta"
-            app:layout_constraintStart_toEndOf="@id/guideline_split"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/label_port_sta"
-            style="@style/DetailLabelStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Port STA:"
-            app:layout_constraintTop_toBottomOf="@id/label_ip_sta"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/guideline_split"
-            android:layout_marginTop="8dp"/>
-
-        <TextView
-            android:id="@+id/detail_port_sta"
-            style="@style/DetailValueStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:ellipsize="end"
-            app:layout_constraintTop_toTopOf="@id/label_port_sta"
+            app:layout_constraintTop_toTopOf="@id/label_netb_port"
             app:layout_constraintStart_toEndOf="@id/guideline_split"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -231,8 +209,8 @@
             style="@style/DetailLabelStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Vendor (OUI):"
-            app:layout_constraintTop_toBottomOf="@id/label_port_sta"
+            android:text="@string/details_entity_label_vendor"
+            app:layout_constraintTop_toBottomOf="@id/label_netb_port"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_split"
             android:layout_marginTop="8dp"

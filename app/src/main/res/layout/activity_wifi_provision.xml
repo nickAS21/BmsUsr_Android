@@ -82,7 +82,7 @@
             android:id="@+id/textViewConnectedIp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/ip_ap_input_hint"
+            android:hint="@string/net_a_ip_input_hint"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 

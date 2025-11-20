@@ -2,6 +2,8 @@ package org.bms.usr.settings;
 
 import static org.bms.usr.BmsUsrApp.getSharedPreferences;
 
+import android.content.SharedPreferences;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -12,14 +14,20 @@ import java.util.Map;
 public class HelperBmsSettings {
 
     private static final String KEY_BMS_WIFI_MAP = "bmsWifiMap";
-    public static final String IP_DEF_STA_PREFIX = "10.10.100.100";        // 10.10.100+id.100
-    public static final String IP_DEF_AP = "192.168.8.119";         // IP PC, AWS. other -> // куди BMS підключається у AP-режимі Client (твій ноут / AWS)
-    public static final String IP_DEF_WIFI_HOME_PREFIX = "192.168.8.";  // 92.168.8.100+id
-    public static final int PORT_DEF_AP_BASE = 8890;               // +id
-    public static final int PORT_DEF_STA_BASE = 18890;                   // +id
-    public static final int BAUTRATE_DEF_STA = 56700;                   // +id
-    public static final int DATA_BITS_DEF_STA = 8;                   // +id
+    public static final String SOCKET_B_IP_DEF = "10.10.100.100";        // 10.10.100.100
+    public static final String KEY_NET_A_IP_DEF = "netAIpDef";
+    public static final String NET_A_IP_DEF = "192.168.8.119";          // IP PC, AWS. other -> // куди BMS підключається у NET A (STA) - mode Client (ноут / AWS)
+    public static final int NET_A_PORT_DEF = 8890;                      // +id
+    public static final int SOCKET_B_PORT_DEF = 18890;                   // +id
 
+    public static void saveNetA_Ip(String NetA_IpDef) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(KEY_NET_A_IP_DEF, NetA_IpDef);
+        editor.apply();
+    }
+    public static String getNetA_Ip() {
+        return getSharedPreferences().getString(KEY_NET_A_IP_DEF, NET_A_IP_DEF);
+    }
     public static Map<String, WiFiBmsEntity> getBmsWifiMap() {
         Gson gson = new Gson();
         String json = getSharedPreferences().getString(KEY_BMS_WIFI_MAP, null);
@@ -29,15 +37,9 @@ public class HelperBmsSettings {
         Type type = new TypeToken<Map<String, WiFiBmsEntity>>() {}.getType();
         return gson.fromJson(json, type);
     }
-
-
-    /**
-     * Example:
-     * StarlinkDachaWifi -> 3e:90:1f:56:1d:28 -> IPv4: 192.168.1.51
-     */
-    public static void addOrUpdateBmsWifiEntry(int id, String ipAp, String ssid, String ssidBms, String bssid) {
+    public static void addOrUpdateBmsWifiEntry(int id, String ssid, String ssidBms, String bssid, String netIp) {
         Map<String, WiFiBmsEntity> map = getBmsWifiMap();
-        map.put(bssid, new WiFiBmsEntity(id, ipAp, ssid, ssidBms, bssid));
+        map.put(bssid, new WiFiBmsEntity(id, ssid, ssidBms, bssid, netIp));
         saveBmsWifiMap(map);
     }
 
@@ -59,4 +61,6 @@ public class HelperBmsSettings {
         String json = gson.toJson(map);
         getSharedPreferences().edit().putString(KEY_BMS_WIFI_MAP, json).apply();
     }
+
+
 }

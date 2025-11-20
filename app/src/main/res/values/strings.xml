@@ -3,6 +3,7 @@
     <string name="app_name" translatable="false">BMS USR</string>
 
     <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
     <string name="button_back">Back</string>
     <string name="button_scan">Scan</string>
     <string name="about_dialog_title">About program</string>
@@ -46,6 +47,10 @@
     <string name="bms_networks_updated_zero">BMS network list updated as empty.</string>
     <string name="update_settings_success">BMS WiFi settings updated to the selected network.</string>
     <string name="error_with_message">Error: %s</string>
+    <string name="update_settings_sta_success">"Settings: AP+STA, Network A – client successfully updated"</string>
+    <string name="update_settings_sta_error_continue">"Continue Wi-Fi setup despite error?"</string>
+    <string name="update_settings_sta_error_continue_yes">"Yes"</string>
+    <string name="update_settings_sta_error_continue_no">"No"</string>
 
     <string name="content_desc_back">Back</string>
     <string name="connected_to_title">Connected to:</string>
@@ -91,7 +96,6 @@
 
     <string name="filter_updated_toast">Filter updated to: %s</string>
     <string name="filter_cannot_be_empty">Filter cannot be empty.</string>
-    <string name="button_cancel">Cancel</string>
 
     <string name="disable_filter_text">Disable Filter</string>
     <string name="enable_filter_text">Enable Filter</string>
@@ -100,18 +104,26 @@
     <string name="reset_filter_text">Reset Filter</string>
     <string name="filter_reset_toast">Filter reset to:      \nEnabled=\'%1$b\', Val=\'%2$s\'</string>
     <string name="reset_bms_wifi_map_text">Reset All Bms Wifi Map</string>
+    <string name="reset_bms_wifi_map_text_title">Confirmation</string>
+    <string name="reset_bms_wifi_map_text_msg">Are you sure you want to delete all BMS Wi-Fi settings entries?</string>
     <string name="add_bms_entry_text">Add BMS Network</string>
+    <string name="add_add_net_a_ip_text">Add IP for Network A</string>
+    <string name="netIp_updated_toast">IP for Network A updated to: %s</string>
+    <string name="netIp_cannot_be_empty">IP for Network A cannot be empty.</string>
+    <string name="dialog_set_net_a_ip_title">IP for Network A</string>
     <string name="updated_bms_entry_text">Edit BMS Network</string>
     <string name="dialog_add_bms_entry_title">Add New BMS Network</string>
     <string name="dialog_updated_bms_entry_title">Updated BMS Network</string>
     <string name="id_input_hint" translatable="false">ID</string>
-    <string name="ip_ap_input_hint" translatable="false">IP for AP mode, then as CLIENT to SERVER out</string>
+    <string name="net_a_ip_input_hint" translatable="false">Net A Ip for STA mode, then as CLIENT to SERVER out</string>
+    <string name="net_a_port_input_hint" translatable="false">Port for STA mode, then as CLIENT to SERVER out: 8890 + id</string>
     <string name="ssid_input_hint" translatable="false">SSID WIFI</string>
     <string name="ssid_bms_input_hint" translatable="false">SSID BMS</string>
     <string name="bssid_input_hint">BSSID (MAC Address)</string>
-    <string name="ip_sta_wifi_home_input_hint" translatable="false">IP (STA mode WiFi Home)</string>
-    <string name="port_sta_input_hint" translatable="false">PORT (STA mode Server Socket B settings: 18890 + id)</string>
+    <string name="net_b_ip_input_hint" translatable="false">IP (STA mode Server Socket B)</string>
+    <string name="net_b_port_input_hint" translatable="false">PORT (STA mode Server Socket B settings: 18890 + id)</string>
     <string name="entry_added_toast">Network %1$s added.</string>
+    <string name="entry_not_added_toast">Network not added. Not all fields are filled in: ID, Net A Ip, SSID WIFI, BSSID (MAC Address).</string>
     <string name="entry_updated_toast">Network %1$s updated.</string>
     <string name="delete_bms_entry_text">Delete BMS Network</string>
     <string name="dialog_enter_ssid_title">Enter SSID to delete</string>
@@ -121,4 +133,13 @@
     <string name="icon_by_level" translatable="false">Icon by level</string>
     <string name="details_entity_title">WiFi BMS Entity Details</string>
     <string name="details_info_entity_not">Detailed information is not available for this network.</string>
+    <string name="details_entity_label_id" translatable="false">ID (Number):</string>
+    <string name="details_entity_label_ssid" translatable="false">SSID WiFi BMS:</string>
+    <string name="details_entity_label_ssid_bms" translatable="false">SSID BMS:</string>
+    <string name="details_entity_label_bssid" translatable="false">BSSID (MAC):</string>
+    <string name="details_entity_label_net_a_ip" translatable="false">Net A Ip (STA) (Server):</string>
+    <string name="details_entity_label_net_a_port" translatable="false">Net A Port:</string>
+    <string name="details_entity_label_net_b_ip" translatable="false">Socket B Ip:</string>
+    <string name="details_entity_label_net_b_port" translatable="false">Socket B Port:</string>
+    <string name="details_entity_label_vendor" translatable="false">Vendor (OUI):</string>
 </resources>

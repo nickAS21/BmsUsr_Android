@@ -25,6 +25,7 @@ public class MenuHelper {
             menu.findItem(R.id.action_toggle_filter).setVisible(true);
             menu.findItem(R.id.action_reset_filter).setVisible(true);
         } else if (activityClass.equals(WiFiSettingsActivity.class)) {
+            menu.findItem(R.id.action_add_net_a_ip).setVisible(true);
             menu.findItem(R.id.action_reset_bms_wifi_map).setVisible(true);
             menu.findItem(R.id.action_add_bms_entry).setVisible(true);
             menu.findItem(R.id.action_updated_bms_entry).setVisible(true);

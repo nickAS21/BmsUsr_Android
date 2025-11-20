@@ -7,10 +7,12 @@ import static org.bms.usr.provision.CodecBmsProvision.getCommand;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
-import static org.bms.usr.settings.HelperBmsSettings.IP_DEF_AP;
+import static org.bms.usr.settings.HelperBmsSettings.NET_A_IP_DEF;
 import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
+import static org.bms.usr.settings.HelperBmsSettings.getNetA_Ip;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,6 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.bms.usr.R;
+import org.bms.usr.settings.RequestChain;
+import org.bms.usr.settings.UsrHttpClient;
 import org.bms.usr.transport.ResultSendCommand;
 import org.bms.usr.transport.UdpClient;
 import org.bms.usr.service.WifiListAdapter;
@@ -38,7 +42,6 @@ import org.bms.usr.transport.WiFiBmsListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class WiFiProvisionActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
@@ -56,7 +59,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
     private String currentSsidStart;
     private String connectedSsid;
     private String connectedToId;
-    private String connectedIpApClientToServer;
+    private String connectedNetAClientIpToServer;
     private String connectedBSsid;
 
     @Override
@@ -82,7 +85,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             if (imm != null) {
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
             }
-            startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+            sendSettingsBeforeProvision(ssid, password);
         });
         buttonBack.setOnClickListener(v -> closeActivity());
         buttonScan.setOnClickListener(v -> {
@@ -101,10 +104,10 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         connectedBSsid = getIntent().getStringExtra(CHOSEN_BSSID_TEXT);
         currentSsidStart = getIntent().getStringExtra(CURRENT_SSID_START_TEXT);
         connectedToId = null;
-        connectedIpApClientToServer = IP_DEF_AP;
+        connectedNetAClientIpToServer = getNetA_Ip();
         textViewConnectedTo.setText(connectedSsid);
         editTextId.setText(connectedToId);
-        editTextIp.setText(connectedIpApClientToServer);
+        editTextIp.setText(connectedNetAClientIpToServer);
 
         // Add TextWatcher to both input fields
         TextWatcher textWatcher = new TextWatcher() {
@@ -124,7 +127,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
                 // Activate/deactivate the OK button based on the check
                 buttonOk.setEnabled(isReady);
                 connectedToId = editTextId.getText().toString();
-                connectedIpApClientToServer = editTextIp.getText().toString();
+                connectedNetAClientIpToServer = editTextIp.getText().toString();
             }
         };
 
@@ -198,7 +201,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             case RSP_UPDATE_SETTINGS: // configuration saved result ok
                 Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
                 // === UPDATE MAP IN SHARED PREFERENCES ===
-                addOrUpdateBmsWifiEntry(Integer.parseInt(connectedToId), connectedIpApClientToServer, connectedSsid, null,  connectedBSsid);
+                addOrUpdateBmsWifiEntry(Integer.parseInt(connectedToId), connectedSsid, null,  connectedBSsid, connectedNetAClientIpToServer);
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());
@@ -236,5 +239,51 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         resultIntent.putExtra(CURRENT_SSID_START_TEXT, currentSsidStart);
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+
+    public void sendSettingsBeforeProvision(String ssid, String password) {
+
+        UsrHttpClient http = new UsrHttpClient();
+        http.setNetworkAClientIpToServer(this.connectedNetAClientIpToServer);
+        http.setConnectedToId(this.connectedToId);
+
+        RequestChain chain = new RequestChain(
+                () -> runOnUiThread(() -> {
+                        Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_sta_success), Toast.LENGTH_SHORT).show();
+                        startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+                    }
+                ),
+                error -> runOnUiThread(() -> {
+                    new AlertDialog.Builder(WiFiProvisionActivity.this)
+                            .setTitle(getString(R.string.error_with_message, error))
+                            .setMessage(getString(R.string.update_settings_sta_error_continue))
+                            .setPositiveButton(getString(R.string.update_settings_sta_error_continue_yes), (dialog, which) -> {
+                                startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+                            })
+                            .setNegativeButton(getString(R.string.update_settings_sta_error_continue_no), (dialog, which) -> {
+                                // ► We do nothing - the user stopped
+                            })
+                            .setCancelable(true)
+                            .show();
+                    }
+                )
+        );
+
+        chain.add(() -> http.postStaMode(chain.wrap(new UsrHttpClient.Callback() {
+            @Override public void onSuccess(String r) {}
+            @Override public void onError(String e) {}
+        })));
+
+        chain.add(() -> http.postApStaOn(chain.wrap(new UsrHttpClient.Callback() {
+            @Override public void onSuccess(String r) {}
+            @Override public void onError(String e) {}
+        })));
+
+        chain.add(() -> http.postAppSetting(chain.wrap(new UsrHttpClient.Callback() {
+            @Override public void onSuccess(String r) {}
+            @Override public void onError(String e) {}
+        })));
+
+        chain.start();
     }
 }
