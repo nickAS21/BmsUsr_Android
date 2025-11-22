@@ -2,6 +2,8 @@ package org.bms.usr;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +11,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -134,13 +137,60 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void showAboutDialog() {
-        String aboutMessage = getString(R.string.about_dialog_message) + "\n\n" +
-                getString(R.string.github_url);
-        SpannableString spannableString = new SpannableString(aboutMessage);
+        String appVersionName = getAppVersionName();
+        String author = getString(R.string.author);
         String githubUrl = getString(R.string.github_url);
-        int startIndex = aboutMessage.indexOf(githubUrl);
-        int endIndex = startIndex + githubUrl.length();
 
+        String aboutMessage = getString(
+                R.string.about_dialog_message,
+                appVersionName,
+                author,
+                githubUrl
+        );
+
+        SpannableString spannableString = new SpannableString(aboutMessage);
+
+        // --- BOLD Version: "<value>" ---
+        int startIndex = aboutMessage.indexOf(appVersionName);
+        int endIndex = startIndex + appVersionName.length();
+        if (startIndex >= 0) {
+
+            spannableString.setSpan(
+                    new StyleSpan(Typeface.BOLD),
+                    startIndex,
+                    endIndex,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+
+        // --- BOLD Author: "<value>" ---
+        startIndex = aboutMessage.indexOf(author);
+        if (startIndex  >= 0) {
+            int end = startIndex + author.length();
+            spannableString.setSpan(
+                    new StyleSpan(Typeface.BOLD),
+                    startIndex,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+
+        // --- BOLD GithubUrl: "<value>" ---
+        startIndex = aboutMessage.indexOf(githubUrl);
+        if (startIndex  >= 0) {
+            int end = startIndex + githubUrl.length();
+            spannableString.setSpan(
+                    new StyleSpan(Typeface.BOLD),
+                    startIndex,
+                    end,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
+
+
+        // --- КЛІКАБЕЛЬНИЙ GITHUB URL ---
+        startIndex = aboutMessage.indexOf(githubUrl);
+        endIndex = startIndex + githubUrl.length();
         if (startIndex >= 0) {
             spannableString.setSpan(new ClickableSpan() {
                 @Override
@@ -167,5 +217,15 @@ public class MainActivity extends AppCompatActivity {
                 .setView(messageTextView)
                 .setPositiveButton(R.string.button_ok, null)
                 .show();
+    }
+
+    public String getAppVersionName() {
+        String versionName = "N/A";
+        try {
+            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
     }
 }

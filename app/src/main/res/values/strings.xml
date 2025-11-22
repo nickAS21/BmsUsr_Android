@@ -9,11 +9,13 @@
     <string name="about_dialog_title">About program</string>
     <string name="version_info">Version: %s</string>
     <string name="about_dialog_message">
-        This app is designed to configure and manage the Wi-Fi settings of the USR-WIFI232-B2 module. It is intended for use with the GBL_2.45K3 battery from GS Energy Storage (SYL Battery), which uses standard firmware (AB_AIO_4850_V1212_12101456) and the AoBo protocol over CAN.\n\n
-
-        Author: Nick Kulikov (nickAS21)\n
-        GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
+        This application is designed for configuring and managing the Wi-Fi parameters of the USR-WIFI232-B2/A2 module. It is developed for use with the GBL_2.45K3 battery from GS Energy Storage (SYL Battery), which operates on the standard firmware (AB_AIO_4850_V1212_12101456) and uses the AoBo protocol over CAN.\n\n
+        Version: %s\n\n
+        Author: %s\n
+        GitHub: %s
     </string>
+    <string name="github_url" translatable="false">https://github.com/nickAS21/BMSUSRProvision_Android</string>
+    <string name="author" translatable="false">Nick Kulikov (nickAS21)</string>
 
     <string name="press_again_to_exit">Click twice and quit</string>
     <string name="wifi_search_title" translatable="false">WiFi USR Provision</string>
@@ -38,7 +40,6 @@
     <string name="cannot_add_or_find_network">Failed to add or find network.</string>
     <string name="cannot_start_wifi_scan">Failed to start Wi-Fi scan</string>
     <string name="scan_completed">Scan completed.</string>
-    <string name="github_url" translatable="false">https://github.com/nickAS21/BMSUSRProvision_Android</string>
 
     <string name="main_prompt_text">Select a network to connect</string>
     <string name="rescan_button_text">Scan again</string>

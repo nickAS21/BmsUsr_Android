@@ -7,7 +7,6 @@ import static org.bms.usr.provision.CodecBmsProvision.getCommand;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_BSSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
-import static org.bms.usr.settings.HelperBmsSettings.NET_A_IP_DEF;
 import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
 import static org.bms.usr.settings.HelperBmsSettings.getNetA_Ip;
 
@@ -189,7 +188,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
                             break;
                         }
                     }
-//                    bmsNetworksList.addAll(networksFromBms);
+                    // bmsNetworksList.addAll(networksFromBms);
                     bmsNetworksAdapter.setWifiNetworks(networksFromBms);
                     Toast.makeText(WiFiProvisionActivity.this, getString(R.string.bms_networks_updated), Toast.LENGTH_SHORT).show();
                 } else {
@@ -224,7 +223,6 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         }
     }
 
-
     private void errorSendCommand (String message) {
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
@@ -240,33 +238,29 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         setResult(RESULT_OK, resultIntent);
         finish();
     }
-
     public void sendSettingsBeforeProvision(String ssid, String password) {
-
         UsrHttpClient http = new UsrHttpClient();
         http.setNetworkAClientIpToServer(this.connectedNetAClientIpToServer);
         http.setConnectedToId(this.connectedToId);
 
         RequestChain chain = new RequestChain(
-                () -> runOnUiThread(() -> {
-                        Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_sta_success), Toast.LENGTH_SHORT).show();
-                        startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
-                    }
-                ),
-                error -> runOnUiThread(() -> {
-                    new AlertDialog.Builder(WiFiProvisionActivity.this)
-                            .setTitle(getString(R.string.error_with_message, error))
-                            .setMessage(getString(R.string.update_settings_sta_error_continue))
-                            .setPositiveButton(getString(R.string.update_settings_sta_error_continue_yes), (dialog, which) -> {
-                                startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
-                            })
-                            .setNegativeButton(getString(R.string.update_settings_sta_error_continue_no), (dialog, which) -> {
-                                // ► We do nothing - the user stopped
-                            })
-                            .setCancelable(true)
-                            .show();
-                    }
-                )
+            () -> runOnUiThread(() -> {
+                    Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_sta_success), Toast.LENGTH_SHORT).show();
+                    startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+                }
+            ),
+            error -> runOnUiThread(() -> new AlertDialog.Builder(WiFiProvisionActivity.this)
+                .setTitle(getString(R.string.error_with_message, error))
+                .setMessage(getString(R.string.update_settings_sta_error_continue))
+                .setPositiveButton(getString(R.string.update_settings_sta_error_continue_yes), (dialog, which) -> {
+                    startSendCommand(CMD_UPDATE_SETTINGS, ssid, password);
+                })
+                .setNegativeButton(getString(R.string.update_settings_sta_error_continue_no), (dialog, which) -> {
+                    // ► We do nothing - the user stopped
+                })
+                .setCancelable(true)
+                .show()
+            )
         );
 
         chain.add(() -> http.postStaMode(chain.wrap(new UsrHttpClient.Callback() {

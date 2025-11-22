@@ -8,9 +8,10 @@
     <string name="about_dialog_title">Про програму</string>
     <string name="version_info">Версія: %s</string>
     <string name="about_dialog_message">
-        Цей додаток призначений для налаштування та керування Wi-Fi параметрами модуля USR-WIFI232-B2. Він розроблений для використання з акумулятором GBL_2.45K3 від виробника GS Energy Storage (SYL Battery), що працює на стандартній прошивці (AB_AIO_4850_V1212_12101456) і використовує протокол AoBo через CAN.\n\n
-        Автор: Nick Kulikov (nickAS21)\n
-        GitHub: https://github.com/nickAS21/BMSUSRProvision_Android
+        Цей додаток призначений для налаштування та керування Wi-Fi параметрами модуля USR-WIFI232-B2/A2. Він розроблений для використання з акумулятором GBL_2.45K3 від виробника GS Energy Storage (SYL Battery), що працює на стандартній прошивці (AB_AIO_4850_V1212_12101456) і використовує протокол AoBo через CAN.\n\n
+        Версія: %s\n\n
+        Автор: %s\n
+        GitHub: %s
     </string>
     <string name="wifi_settings_title">WiFi USR налаштування</string>
     <string name="wifi_bms_saved_title">WiFi BMS збережені</string>
