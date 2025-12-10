@@ -33,6 +33,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_add_net_b_ip"
+        android:title="@string/add_add_net_b_ip_text"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_reset_bms_wifi_map"
         android:title="@string/reset_bms_wifi_map_text"
         app:showAsAction="never" />

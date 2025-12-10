@@ -1,16 +1,19 @@
 package org.bms.usr.settings;
 
 import static org.bms.usr.BmsUsrApp.getWifiManager;
-import static org.bms.usr.provision.HelperBmsProvision.saveFilterSettings;
 import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
 import static org.bms.usr.settings.HelperBmsSettings.getBmsWifiMap;
 import static org.bms.usr.settings.HelperBmsSettings.getNetA_Ip;
+import static org.bms.usr.settings.HelperBmsSettings.getNetB_Ip;
 import static org.bms.usr.settings.HelperBmsSettings.removeBmsWifiEntry;
 import static org.bms.usr.settings.HelperBmsSettings.resetBmsWifiMap;
 import static org.bms.usr.settings.HelperBmsSettings.saveNetA_Ip;
+import static org.bms.usr.settings.HelperBmsSettings.saveNetB_Ip;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -30,6 +33,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -49,7 +53,8 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
     private RecyclerView recyclerViewWiFiBmsNetworks;
     private WifiBmsListAdapter bmsNetworksAdapter;
     private WifiManager wifiManager;
-    private String netIp;
+    private String netIpA;
+    private String netIpB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +67,8 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
             return insets;
         });
 
-        netIp = getNetA_Ip();
+        netIpA = getNetA_Ip();
+        netIpB = getNetB_Ip();
 
         ImageButton buttonBack = findViewById(R.id.buttonBack);
         buttonBack.setOnClickListener(v -> finish());
@@ -71,10 +77,22 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         recyclerViewWiFiBmsNetworks = findViewById(R.id.recyclerViewWiFiBmsNetworks);
         wifiManager = getWifiManager();
         recyclerViewWiFiBmsNetworks.setLayoutManager(new LinearLayoutManager(this));
-        bmsNetworksAdapter = new WifiBmsListAdapter(this, this, this);
+        bmsNetworksAdapter = new WifiBmsListAdapter(this, this);
         recyclerViewWiFiBmsNetworks.setAdapter(bmsNetworksAdapter);
         // Load and display networks from SharedPreferences
         loadBmsNetworks();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (wifiManager != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                wifiManager.startScan(); //  Update WiFi list in system
+            }
+        }
     }
 
     // New methods for menu integration
@@ -96,6 +114,10 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
 
         if (id == R.id.action_add_net_a_ip) {
             showNetAIpDialog();
+            return true;
+        }
+        else if (id == R.id.action_add_net_b_ip) {
+            showNetBIpDialog();
             return true;
         }
         else if (id == R.id.action_reset_bms_wifi_map) {
@@ -151,9 +173,13 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         inputId.setHint(R.string.id_input_hint);
         linearLayout.addView(inputId);
 
-        final EditText inputNetIp = new EditText(this);
-        inputNetIp.setHint(R.string.net_a_ip_input_hint);
-        linearLayout.addView(inputNetIp);
+        final EditText inputNetIpA = new EditText(this);
+        inputNetIpA.setHint(R.string.net_a_ip_input_hint);
+        linearLayout.addView(inputNetIpA);
+
+        final EditText inputNetIpB = new EditText(this);
+        inputNetIpB.setHint(R.string.net_b_ip_input_hint);
+        linearLayout.addView(inputNetIpB);
 
         final EditText inputSsid = new EditText(this);
         inputSsid.setHint(R.string.ssid_input_hint);
@@ -187,7 +213,8 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                 if (position > 0) {
                     WiFiBmsEntity selectedNetwork = availableNetworks.get(position - 1);
                     inputId.setText(selectedNetwork.id());
-                    inputNetIp.setText(selectedNetwork.netIp());
+                    inputNetIpA.setText(selectedNetwork.netIpA());
+                    inputNetIpB.setText(selectedNetwork.netIpB());
                     inputSsid.setText(selectedNetwork.ssid());
                     inputSsidBms.setText(selectedNetwork.ssidBms());
                     inputBssid.setText(selectedNetwork.bssid());
@@ -208,12 +235,13 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
             Button okButton = parentDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             okButton.setOnClickListener(v -> {
                 int newId = Integer.parseInt(String.valueOf(inputId.getText()));
-                String newNetIp = inputNetIp.getText().toString().trim();
+                String newNetIpA = inputNetIpA.getText().toString().trim();
+                String newNetIpB = inputNetIpB.getText().toString().trim();
                 String newSsid = inputSsid.getText().toString().trim();
                 String newSsidBms = inputSsidBms.getText().toString().trim();
                 String newBssid = inputBssid.getText().toString().trim();
 
-                if (newId != 0 && !newNetIp.isEmpty() && !newSsid.isEmpty() && !newBssid.isEmpty()) {
+                if (newId != 0 && !newNetIpA.isEmpty() && !newNetIpB.isEmpty() && !newSsid.isEmpty() && !newBssid.isEmpty()) {
                     Map<String, WiFiBmsEntity> bmsWifiMap = getBmsWifiMap();
 
                     // Перевірка на дублікати
@@ -247,14 +275,14 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                                     if (originalSsidToAdd[0] != null) {
                                         removeBmsWifiEntry(originalSsidToAdd[0]);
                                     }
-                                    addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid, newNetIp);
+                                    addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid, newNetIpA, newNetIpB);
                                     Toast.makeText(this, getString(R.string.entry_updated_toast, newSsid), Toast.LENGTH_SHORT).show();
                                     loadBmsNetworks();
                                 }
                         );
 
                     } else {
-                        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid, newNetIp);
+                        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms,  newBssid, newNetIpA, newNetIpB);
                         Toast.makeText(this, getString(R.string.entry_added_toast, newSsid), Toast.LENGTH_SHORT).show();
                         loadBmsNetworks();
                         parentDialog.dismiss();
@@ -285,10 +313,15 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         inputId.setEnabled(false);
         linearLayout.addView(inputId);
 
-        final EditText inputNetIp = new EditText(this);
-        inputNetIp.setHint(R.string.net_a_ip_input_hint);
-        inputNetIp.setEnabled(false);
-        linearLayout.addView(inputNetIp);
+        final EditText inputNetIpA = new EditText(this);
+        inputNetIpA.setHint(R.string.net_a_ip_input_hint);
+        inputNetIpA.setEnabled(false);
+        linearLayout.addView(inputNetIpA);
+
+        final EditText inputNetIpB = new EditText(this);
+        inputNetIpB.setHint(R.string.net_b_ip_input_hint);
+        inputNetIpB.setEnabled(false);
+        linearLayout.addView(inputNetIpB);
 
         final EditText inputSsid = new EditText(this);
         inputSsid.setHint(R.string.ssid_input_hint);
@@ -323,25 +356,29 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                     WiFiBmsEntity values = savedNetworksMap.get(selectedBSsid);
                     originalSsidToUpdate[0] = selectedBSsid;
                     inputId.setText(String.valueOf(values.id()));
-                    inputNetIp.setText(values.netIp());
+                    inputNetIpA.setText(values.netIpA());
+                    inputNetIpB.setText(values.netIpB());
                     inputSsid.setText(values.ssid());
                     inputBssid.setText(selectedBSsid);
                     inputSsidBms.setText(values.ssidBms());
 
                     inputId.setEnabled(true);
-                    inputNetIp.setEnabled(true);
+                    inputNetIpA.setEnabled(true);
+                    inputNetIpB.setEnabled(true);
                     inputSsid.setEnabled(true);
                     inputSsidBms.setEnabled(true);
                     inputBssid.setEnabled(true);
                 } else {
                     originalSsidToUpdate[0] = null;
                     inputId.setText("");
-                    inputNetIp.setText("");
+                    inputNetIpA.setText("");
+                    inputNetIpB.setText("");
                     inputSsid.setText("");
                     inputSsidBms.setText("");
                     inputBssid.setText("");
                     inputId.setEnabled(false);
-                    inputNetIp.setEnabled(false);
+                    inputNetIpA.setEnabled(false);
+                    inputNetIpB.setEnabled(false);
                     inputSsid.setEnabled(false);
                     inputSsidBms.setEnabled(false);
                     inputBssid.setEnabled(false);
@@ -361,7 +398,8 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
             Button okButton = parentDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             okButton.setOnClickListener(v -> {
                 int updatedId = Integer.parseInt((inputId.getText().toString()));
-                String updatedNetIp = inputNetIp.getText().toString();
+                String updatedNetIpA = inputNetIpA.getText().toString();
+                String updatedNetIpB = inputNetIpB.getText().toString();
                 String updatedSsid = inputSsid.getText().toString();
                 String updatedSsidBms = inputSsidBms.getText().toString();
                 String updatedBssid = inputBssid.getText().toString();
@@ -372,10 +410,10 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
                         showConflictConfirmationDialog(
                                 parentDialog,
                                 getString(R.string.dialog_duplicate_entry_message, updatedSsid),
-                                () -> performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedNetIp, updatedSsid, updatedSsidBms)
+                                () -> performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedNetIpA, updatedNetIpB, updatedSsid, updatedSsidBms)
                         );
                     } else {
-                        performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedNetIp, updatedSsid, updatedSsidBms);
+                        performUpdate(originalSsidToUpdate[0], updatedBssid, updatedId, updatedNetIpA, updatedNetIpB, updatedSsid, updatedSsidBms);
                         parentDialog.dismiss();
                     }
                 }
@@ -400,9 +438,9 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
     }
 
 
-    private void performUpdate(String oldBssid, String newBssid, int newId, String newNetIp, String newSsid, String newSsidBms) {
+    private void performUpdate(String oldBssid, String newBssid, int newId, String newNetIpA, String newNetIpB, String newSsid, String newSsidBms) {
         removeBmsWifiEntry(oldBssid);
-        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms, newBssid, newNetIp);
+        addOrUpdateBmsWifiEntry(newId, newSsid, newSsidBms, newBssid, newNetIpA, newNetIpB);
         Toast.makeText(this, getString(R.string.entry_updated_toast, newBssid), Toast.LENGTH_SHORT).show();
         loadBmsNetworks();
     }
@@ -529,9 +567,9 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
 
         // Проставляємо значення
         ((TextView) dialogView.findViewById(R.id.detail_id)).setText(String.valueOf(entity.id()));
-        ((TextView) dialogView.findViewById(R.id.detail_net_a_ip)).setText(safe(entity.netIp()));
-        ((TextView) dialogView.findViewById(R.id.detail_net_a_port)).setText(String.valueOf(entity.netPort()));
-        ((TextView) dialogView.findViewById(R.id.detail_netb_ip)).setText(safe(entity.netBIp()));
+        ((TextView) dialogView.findViewById(R.id.detail_net_a_ip)).setText(safe(entity.netIpA()));
+        ((TextView) dialogView.findViewById(R.id.detail_net_a_port)).setText(String.valueOf(entity.netAPort()));
+        ((TextView) dialogView.findViewById(R.id.detail_netb_ip)).setText(safe(entity.netIpB()));
         ((TextView) dialogView.findViewById(R.id.detail_netb_port)).setText(String.valueOf(entity.netBPort()));
         ((TextView) dialogView.findViewById(R.id.detail_ssid)).setText(safe(entity.ssid()));
         ((TextView) dialogView.findViewById(R.id.detail_ssid_bms)).setText(safe(entity.ssidBms()));
@@ -555,18 +593,42 @@ public class WiFiSettingsActivity extends AppCompatActivity implements WifiBmsLi
         builder.setTitle(R.string.dialog_set_net_a_ip_title);
 
         final EditText input = new EditText(this);
-        input.setText(netIp);
+        input.setText(netIpA);
         builder.setView(input);
 
         builder.setPositiveButton(R.string.button_ok, (dialog, which) -> {
-            String newNetIp = input.getText().toString();
-            if (!newNetIp.isEmpty()) {
-                netIp = newNetIp;
-                saveNetA_Ip(netIp);
+            String newNetIpA = input.getText().toString();
+            if (!newNetIpA.isEmpty()) {
+                netIpA = newNetIpA;
+                saveNetA_Ip(netIpA);
 
-                Toast.makeText(this, getString(R.string.netIp_updated_toast, newNetIp), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.netIpA_updated_toast, newNetIpA), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, R.string.netIp_cannot_be_empty, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.netIpA_cannot_be_empty, Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.button_cancel, (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void showNetBIpDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.dialog_set_net_b_ip_title);
+
+        final EditText input = new EditText(this);
+        input.setText(netIpB);
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.button_ok, (dialog, which) -> {
+            String newNetIpB = input.getText().toString();
+            if (!newNetIpB.isEmpty()) {
+                netIpB = newNetIpB;
+                saveNetB_Ip(netIpB);
+
+                Toast.makeText(this, getString(R.string.netIpB_updated_toast, newNetIpB), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, R.string.netIpB_cannot_be_empty, Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton(R.string.button_cancel, (dialog, which) -> dialog.cancel());

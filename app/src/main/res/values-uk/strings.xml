@@ -95,9 +95,13 @@
     <string name="reset_bms_wifi_map_text_msg">Ви впевнені, що хочете видалити всі записи Wi-Fi налаштувань BMS?</string>
     <string name="add_bms_entry_text">Додати мережу BMS</string>
     <string name="add_add_net_a_ip_text">Визначення IP для Мережи A</string>
-    <string name="netIp_cannot_be_empty">IP для Мережи A не може бути порожнім.</string>
-    <string name="netIp_updated_toast">IP для Мережи A оновлено на: %s</string>
+    <string name="add_add_net_b_ip_text">Визначення IP для Мережи B</string>
+    <string name="netIpA_cannot_be_empty">IP для Мережи A не може бути порожнім.</string>
+    <string name="netIpB_cannot_be_empty">IP для Мережи B не може бути порожнім.</string>
+    <string name="netIpA_updated_toast">IP для Мережи A оновлено на: %s</string>
+    <string name="netIpB_updated_toast">IP для Мережи B оновлено на: %s</string>
     <string name="dialog_set_net_a_ip_title">IP для Мережи A</string>
+    <string name="dialog_set_net_b_ip_title">IP для Мережи B</string>
     <string name="updated_bms_entry_text">Редагувати мережу BMS</string>
     <string name="dialog_add_bms_entry_title">Додати нову мережу BMS</string>
     <string name="dialog_updated_bms_entry_title">Оновлення мережі BMS</string>

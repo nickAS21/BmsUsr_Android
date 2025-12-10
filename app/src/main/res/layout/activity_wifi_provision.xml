@@ -49,7 +49,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/idInputLayout"
-        android:layout_width="80dp"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
@@ -67,24 +67,44 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/ipInputLayout"
+        android:id="@+id/ipAInputLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         app:errorEnabled="true"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/idInputLayout"
+        app:layout_constraintEnd_toStartOf="@id/ipBInputLayout"
         app:layout_constraintTop_toBottomOf="@id/textViewConnectedToTitle"
         app:hintTextAppearance="@style/TextAppearance.CustomHint">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textViewConnectedIp"
+            android:id="@+id/textViewConnectedIpA"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/net_a_ip_input_hint"
-            android:inputType="text" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:inputType="text"
+            android:textSize="14sp" /> </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/ipBInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ipAInputLayout"
+        app:layout_constraintTop_toBottomOf="@id/textViewConnectedToTitle"
+        app:hintTextAppearance="@style/TextAppearance.CustomHint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textViewConnectedIpB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/net_b_ip_input_hint"
+            android:inputType="text"
+            android:textSize="14sp" /> </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/ssidInputLayout"
@@ -94,8 +114,7 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="24dp"
         app:errorEnabled="true"
-        app:layout_constraintTop_toBottomOf="@id/ipInputLayout">
-
+        app:layout_constraintTop_toBottomOf="@id/ipAInputLayout">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextSsid"
             android:layout_width="match_parent"

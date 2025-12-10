@@ -23,7 +23,6 @@ public class WifiBmsListAdapter extends RecyclerView.Adapter<WifiBmsListAdapter.
 
     private List<WiFiBmsEntity> wiFiBmsEntities;
     private final OnItemClickListener listener;
-    private final Context context;
     private OnInfoClickListener infoClickListener;
 
 
@@ -36,10 +35,9 @@ public class WifiBmsListAdapter extends RecyclerView.Adapter<WifiBmsListAdapter.
     }
 
 
-    public WifiBmsListAdapter(Context context, OnItemClickListener listener, OnInfoClickListener infoClickListener) {
+    public WifiBmsListAdapter(OnItemClickListener listener, OnInfoClickListener infoClickListener) {
         this.wiFiBmsEntities =new ArrayList<>();
         this.listener = listener;
-        this.context = context;
         this.infoClickListener = infoClickListener;
     }
 
@@ -96,11 +94,6 @@ public class WifiBmsListAdapter extends RecyclerView.Adapter<WifiBmsListAdapter.
             textViewSsid = itemView.findViewById(R.id.textViewSsid);
             textViewBSsid = itemView.findViewById(R.id.textViewBSsid);
             textViewSsidBms = itemView.findViewById(R.id.textViewSsidBms);
-
-//            textViewId = itemView.findViewById(R.id.textViewId);
-//            textViewIpWiFiHome = itemView.findViewById(R.id.textViewIpWiFiHome);
-//            textViewPorSta = itemView.findViewById(R.id.textViewPortSta);
-//            textViewOui = itemView.findViewById(R.id.textViewOui);
             imageViewTick = itemView.findViewById(R.id.imageViewTick);
             imageViewWifiSignal = itemView.findViewById(R.id.imageViewWifiSignal);
             imageViewInfo = itemView.findViewById(R.id.imageViewInfo);

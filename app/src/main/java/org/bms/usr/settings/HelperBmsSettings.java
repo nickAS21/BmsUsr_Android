@@ -14,9 +14,11 @@ import java.util.Map;
 public class HelperBmsSettings {
 
     private static final String KEY_BMS_WIFI_MAP = "bmsWifiMap";
-    public static final String SOCKET_B_IP_DEF = "10.10.100.100";        // 10.10.100.100
+//    public static final String SOCKET_B_IP_DEF = "10.10.100.100";        // 10.10.100.100
     public static final String KEY_NET_A_IP_DEF = "netAIpDef";
+    public static final String KEY_NET_B_IP_DEF = "netBIpDef";
     public static final String NET_A_IP_DEF = "192.168.8.119";          // IP PC, AWS. other -> // куди BMS підключається у NET A (STA) - mode Client (ноут / AWS)
+    public static final String NET_B_IP_DEF = "192.168.8.119";          // IP PC, AWS. other -> // куди BMS підключається у NET A (STA) - mode Client (ноут / AWS)
     public static final int NET_A_PORT_DEF = 8890;                      // +id
     public static final int SOCKET_B_PORT_DEF = 18890;                   // +id
 
@@ -25,8 +27,16 @@ public class HelperBmsSettings {
         editor.putString(KEY_NET_A_IP_DEF, NetA_IpDef);
         editor.apply();
     }
+    public static void saveNetB_Ip(String NetB_IpDef) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(KEY_NET_B_IP_DEF, NetB_IpDef);
+        editor.apply();
+    }
     public static String getNetA_Ip() {
         return getSharedPreferences().getString(KEY_NET_A_IP_DEF, NET_A_IP_DEF);
+    }
+    public static String getNetB_Ip() {
+        return getSharedPreferences().getString(KEY_NET_B_IP_DEF, NET_B_IP_DEF);
     }
     public static Map<String, WiFiBmsEntity> getBmsWifiMap() {
         Gson gson = new Gson();
@@ -37,9 +47,9 @@ public class HelperBmsSettings {
         Type type = new TypeToken<Map<String, WiFiBmsEntity>>() {}.getType();
         return gson.fromJson(json, type);
     }
-    public static void addOrUpdateBmsWifiEntry(int id, String ssid, String ssidBms, String bssid, String netIp) {
+    public static void addOrUpdateBmsWifiEntry(int id, String ssid, String ssidBms, String bssid, String netIpA, String netIpB) {
         Map<String, WiFiBmsEntity> map = getBmsWifiMap();
-        map.put(bssid, new WiFiBmsEntity(id, ssid, ssidBms, bssid, netIp));
+        map.put(bssid, new WiFiBmsEntity(id, ssid, ssidBms, bssid, netIpA, netIpB));
         saveBmsWifiMap(map);
     }
 

@@ -9,6 +9,7 @@ import static org.bms.usr.provision.HelperBmsProvision.CHOSEN_SSID_TEXT;
 import static org.bms.usr.provision.HelperBmsProvision.CURRENT_SSID_START_TEXT;
 import static org.bms.usr.settings.HelperBmsSettings.addOrUpdateBmsWifiEntry;
 import static org.bms.usr.settings.HelperBmsSettings.getNetA_Ip;
+import static org.bms.usr.settings.HelperBmsSettings.getNetB_Ip;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
@@ -45,7 +46,8 @@ import java.util.List;
 public class WiFiProvisionActivity extends AppCompatActivity implements WifiListAdapter.OnItemClickListener {
 
     private EditText editTextId;
-    private EditText editTextIp;
+    private EditText editTextIpA;
+    private EditText editTextIpB;
     private EditText editTextSsid;
     private EditText editTextPassword;
     private Button buttonOk;
@@ -59,6 +61,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
     private String connectedSsid;
     private String connectedToId;
     private String connectedNetAClientIpToServer;
+    private String connectedNetBClientIpToServer;
     private String connectedBSsid;
 
     @Override
@@ -68,7 +71,8 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
 
         TextView textViewConnectedTo = findViewById(R.id.textViewConnectedToSsid);
         editTextId = findViewById(R.id.textViewConnectedToId);
-        editTextIp = findViewById(R.id.textViewConnectedIp);
+        editTextIpA = findViewById(R.id.textViewConnectedIpA);
+        editTextIpB = findViewById(R.id.textViewConnectedIpB);
         editTextSsid = findViewById(R.id.editTextSsid);
         editTextPassword = findViewById(R.id.editTextPassword);
 
@@ -104,9 +108,11 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
         currentSsidStart = getIntent().getStringExtra(CURRENT_SSID_START_TEXT);
         connectedToId = null;
         connectedNetAClientIpToServer = getNetA_Ip();
+        connectedNetBClientIpToServer = getNetB_Ip();
         textViewConnectedTo.setText(connectedSsid);
         editTextId.setText(connectedToId);
-        editTextIp.setText(connectedNetAClientIpToServer);
+        editTextIpA.setText(connectedNetAClientIpToServer);
+        editTextIpB.setText(connectedNetBClientIpToServer);
 
         // Add TextWatcher to both input fields
         TextWatcher textWatcher = new TextWatcher() {
@@ -126,12 +132,14 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
                 // Activate/deactivate the OK button based on the check
                 buttonOk.setEnabled(isReady);
                 connectedToId = editTextId.getText().toString();
-                connectedNetAClientIpToServer = editTextIp.getText().toString();
+                connectedNetAClientIpToServer = editTextIpA.getText().toString();
+                connectedNetBClientIpToServer = editTextIpB.getText().toString();
             }
         };
 
         editTextId.addTextChangedListener(textWatcher);
-        editTextIp.addTextChangedListener(textWatcher);
+        editTextIpA.addTextChangedListener(textWatcher);
+        editTextIpB.addTextChangedListener(textWatcher);
         editTextSsid.addTextChangedListener(textWatcher);
         editTextPassword.addTextChangedListener(textWatcher);
 
@@ -200,7 +208,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
             case RSP_UPDATE_SETTINGS: // configuration saved result ok
                 Toast.makeText(WiFiProvisionActivity.this, getString(R.string.update_settings_success), Toast.LENGTH_SHORT).show();
                 // === UPDATE MAP IN SHARED PREFERENCES ===
-                addOrUpdateBmsWifiEntry(Integer.parseInt(connectedToId), connectedSsid, null,  connectedBSsid, connectedNetAClientIpToServer);
+                addOrUpdateBmsWifiEntry(Integer.parseInt(connectedToId), connectedSsid, null,  connectedBSsid, connectedNetAClientIpToServer, connectedNetBClientIpToServer);
                 break;
             case RSP_ERRORS:
                 errorSendCommand (decodeResult.messageError());
