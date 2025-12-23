@@ -3,6 +3,7 @@ package org.bms.usr.settings;
 import static org.bms.usr.settings.HelperBmsSettings.NET_A_PORT_DEF;
 import static org.bms.usr.settings.HelperBmsSettings.SOCKET_B_PORT_DEF;
 import static org.bms.usr.settings.HelperBmsSettings.getNetA_Ip;
+import static org.bms.usr.settings.HelperBmsSettings.getNetB_Ip;
 import static org.bms.usr.settings.HelperBmsSettingsHttpClient.APPLICATION;
 import static org.bms.usr.settings.HelperBmsSettingsHttpClient.APPLY;
 import static org.bms.usr.settings.HelperBmsSettingsHttpClient.APP_CONFIG_HTML;
@@ -56,6 +57,7 @@ public class UsrHttpClient {
 
     private final OkHttpClient client = new OkHttpClient();
     private String connectedNetAClientIpToServer;
+    private String connectedNetBClientIpToServer;
     private String connectedToId;
 
     public interface Callback {
@@ -125,7 +127,7 @@ public class UsrHttpClient {
                 .add(SET2, NET_IP + "=" + this.getNetworkAClientIpToServer())   // SET2 286130688=192.168.8.119
                 .add(SET3, NETB_MODE + "=" + 1)                                 // SET5 286327040=1
                 .add(SET4, NETB_PORT + "=" + netBPort)                          // SET3 286392576=18901
-                .add(SET5, NETB_IP + "=" + this.getNetworkAClientIpToServer())  // SET4 286458368=192.168.8.119
+                .add(SET5, NETB_IP + "=" + this.getNetworkBClientIpToServer())  // SET4 286458368=192.168.8.119
                 .build();
 
         postRequest(callback, formBody, SET_URL);
@@ -172,6 +174,10 @@ public class UsrHttpClient {
         this.connectedNetAClientIpToServer = ipTpServer;
     }
 
+    public void setNetworkBClientIpToServer(String ipTpServer) {
+        this.connectedNetBClientIpToServer = ipTpServer;
+    }
+
     public void setConnectedToId(String id) {
         this.connectedToId = id;
     }
@@ -181,5 +187,12 @@ public class UsrHttpClient {
             this.connectedNetAClientIpToServer = getNetA_Ip();
         }
         return this.connectedNetAClientIpToServer;
+    }
+
+    private String getNetworkBClientIpToServer(){
+        if (this.connectedNetBClientIpToServer == null){
+            this.connectedNetBClientIpToServer = getNetB_Ip();
+        }
+        return this.connectedNetBClientIpToServer;
     }
 }

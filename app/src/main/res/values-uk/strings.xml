@@ -74,7 +74,7 @@
     <string name="bms_networks_updated_zero">Список мереж від BMS оновлено, він пустий.</string>
     <string name="update_settings_success_toast">Налаштування BMS WiFi на обрану мережу - оновлено.</string>
     <string name="error_with_message_toast">Помилка: %s</string>
-    <string name="update_settings_sta_success">"Налаштування: AP+STA, Мережа A – клієнт успішно оновлено"</string>
+    <string name="update_settings_sta_success">"Налаштування: AP+STA, Мережа A та B – клієнт успішно оновлено"</string>
     <string name="update_settings_sta_error_continue">"Продовжити налаштування Wi-Fi, незважаючи на помилку?"</string>
     <string name="update_settings_sta_error_continue_yes">"Так"</string>
     <string name="update_settings_sta_error_continue_no">"Ні"</string>

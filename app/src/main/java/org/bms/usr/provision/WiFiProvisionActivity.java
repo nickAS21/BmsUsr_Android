@@ -249,6 +249,7 @@ public class WiFiProvisionActivity extends AppCompatActivity implements WifiList
     public void sendSettingsBeforeProvision(String ssid, String password) {
         UsrHttpClient http = new UsrHttpClient();
         http.setNetworkAClientIpToServer(this.connectedNetAClientIpToServer);
+        http.setNetworkBClientIpToServer(this.connectedNetBClientIpToServer);
         http.setConnectedToId(this.connectedToId);
 
         RequestChain chain = new RequestChain(

@@ -48,7 +48,7 @@
     <string name="bms_networks_updated_zero">BMS network list updated as empty.</string>
     <string name="update_settings_success">BMS WiFi settings updated to the selected network.</string>
     <string name="error_with_message">Error: %s</string>
-    <string name="update_settings_sta_success">"Settings: AP+STA, Network A – client successfully updated"</string>
+    <string name="update_settings_sta_success">"Settings: AP+STA, Network A and B – client successfully updated"</string>
     <string name="update_settings_sta_error_continue">"Continue Wi-Fi setup despite error?"</string>
     <string name="update_settings_sta_error_continue_yes">"Yes"</string>
     <string name="update_settings_sta_error_continue_no">"No"</string>
