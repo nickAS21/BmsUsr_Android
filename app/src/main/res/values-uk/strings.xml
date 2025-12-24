@@ -24,7 +24,7 @@
     <string name="connected_to_success">Підключено до %s</string>
     <string name="connection_failed_toast">Підключення не вдалося.</string>
     <string name="connection_lost">Підключення до %s втрачено.</string>
-    <string name="wifimanager_not_initialized">WiFiManager не ініціалізовано</string>
+    <string name="wifi_manager_not_initialized">WiFiManager не ініціалізовано</string>
     <string name="wifi_off_for_scan">Wi-Fi вимкнено. Увімкніть його для сканування.</string>
     <string name="location_off_for_scan">Увімкніть служби локації (Location) для сканування Wi-Fi.</string>
     <string name="location_permission_denied">Дозвіл на розташування відхилено. Сканування Wi-Fi неможливе.</string>

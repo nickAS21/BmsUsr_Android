@@ -388,7 +388,7 @@ public class WiFiSearchActivity extends AppCompatActivity implements WifiListAda
      */
     private void startWifiScan() {
         if (wifiManager == null) {
-            Toast.makeText(this, getString(R.string.wifimanager_not_initialized), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.wifi_manager_not_initialized), Toast.LENGTH_SHORT).show();
             return;
         }
 

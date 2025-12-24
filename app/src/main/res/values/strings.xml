@@ -31,7 +31,7 @@
     <string name="connection_failed_toast">Connection failed.</string>
     <string name="connection_lost">Connection to %s lost.</string>
     <string name="connection_to_failed">Connection to %s failed.</string>
-    <string name="wifimanager_not_initialized">WiFiManager not initialized</string>
+    <string name="wifi_manager_not_initialized">WiFiManager not initialized</string>
     <string name="wifi_off_for_scan">Wi-Fi is off. Turn it on to scan.</string>
     <string name="location_off_for_scan">Turn on Location services to scan for Wi-Fi.</string>
     <string name="location_permission_denied">Location permission denied. Wi-Fi scanning is not possible.</string>
